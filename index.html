@@ -1000,7 +1000,20 @@
   // ==============================================================
   // PENTING: Ganti dengan URL Web App dari Google Script Anda yang baru
   const GAS_URL = "https://script.google.com/macros/s/AKfycbxkswfLnDTBPmAZjviWtK9ugm12lgxZAfNVGu3qHA4AfK0t6TMIgmUmaVblANaFkcyJCg/exec"; 
-
+  // ==============================================================
+  // REGISTRASI SERVICE WORKER UNTUK PWA (INSTALL ANDROID)
+  // ==============================================================
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(registration => {
+          console.log('PWA siap! Service Worker terdaftar dengan sukses.');
+        })
+        .catch(error => {
+          console.log('Pendaftaran Service Worker gagal:', error);
+        });
+    });
+  }
   let globalSantriData = []; 
   let ROWS_PER_PAGE = 10;
   let currentPageSantri = 1;
