@@ -1,0 +1,23 @@
+{
+  "name": "E-Pesantren Admin Dashboard",
+  "short_name": "E-Pesantren",
+  "description": "Sistem Informasi Manajemen Terpadu E-Pesantren",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f3f4f6",
+  "theme_color": "#1a5d1a",
+  "icons": [
+    {
+      "src": "logoapk.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logoapk.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
