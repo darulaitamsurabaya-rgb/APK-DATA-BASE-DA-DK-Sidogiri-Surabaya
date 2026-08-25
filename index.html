@@ -1,8 +1,1001 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Pesantren - Dashboard Admin</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Font Google -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- pdfMake -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: { 
+            primary: '#1a5d1a', 
+            dark: '#0d360d', 
+            accent: '#f4b400', 
+            bgbody: '#f3f4f6' 
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+    
+    body { background-color: #f3f4f6; }
+    
+    .nav-link { transition: all 0.3s ease; }
+    .nav-link:hover { background-color: rgba(255,255,255,0.1); transform: translateX(5px); }
+    .nav-link.active { 
+      background: linear-gradient(to right, #f4b400, #fbbf24); 
+      color: #0d360d !important; 
+      font-weight: 700; 
+      box-shadow: 0 4px 15px rgba(244, 180, 0, 0.4); 
+    }
+    
+    /* Input transition focus */
+    .form-input { transition: border-color 0.2s, box-shadow 0.2s; }
+    .form-input:focus { border-color: #1a5d1a; box-shadow: 0 0 0 3px rgba(26, 93, 26, 0.2); outline: none; }
+  </style>
+</head>
+<body class="font-sans text-gray-800 antialiased overflow-x-hidden">
+
+<!-- LOGIN SCREEN -->
+<div id="screen-login" class="fixed inset-0 z-[2000] flex items-center justify-center bg-gray-50 min-h-screen h-full w-full overflow-hidden">
+  
+  <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-primary opacity-20 rounded-full blur-3xl"></div>
+  <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-accent opacity-20 rounded-full blur-3xl"></div>
+
+  <div class="bg-white/80 backdrop-blur-xl w-[90%] max-w-md p-10 rounded-[2rem] shadow-[0_20px_50px_rgba(26,93,26,0.1)] border border-white/50 transform transition-all relative z-10">
+    
+    <div class="text-center mb-10">
+      <div class="bg-gradient-to-br from-primary to-dark inline-flex p-4 rounded-2xl shadow-lg mb-5 transform -rotate-3 hover:rotate-0 transition-transform duration-300">
+        <i class="bi bi-buildings-fill text-white text-4xl"></i>
+      </div>
+      <h4 class="text-3xl font-extrabold text-gray-800 tracking-tight">E-Pesantren</h4>
+      <p class="text-gray-500 text-sm mt-2 font-medium">Sistem Informasi Manajemen Terpadu</p>
+    </div>
+
+    <div class="space-y-5">
+      
+      <div>
+        <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2">Username</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <i class="bi bi-person text-gray-400 text-lg"></i>
+          </div>
+          <input type="text" id="username" onkeypress="if(event.key === 'Enter') auth()" class="w-full pl-11 pr-4 py-3.5 bg-white border border-gray-200 rounded-xl focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm font-medium text-gray-700 shadow-sm" placeholder="Masukkan username Anda">
+        </div>
+      </div>
+      
+      <div>
+        <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2">Password</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <i class="bi bi-shield-lock text-gray-400 text-lg"></i>
+          </div>
+          <input type="password" id="password" onkeypress="if(event.key === 'Enter') auth()" class="w-full pl-11 pr-4 py-3.5 bg-white border border-gray-200 rounded-xl focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-sm font-medium text-gray-700 shadow-sm" placeholder="••••••••">
+        </div>
+      </div>
+      
+      <button onclick="auth()" class="w-full bg-gradient-to-r from-primary to-dark hover:from-dark hover:to-dark text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 mt-6 text-sm tracking-wide uppercase flex justify-center items-center">
+        <i class="bi bi-box-arrow-in-right mr-2 text-lg"></i> Masuk Ke Sistem
+      </button>
+      
+      <div id="login-msg" class="text-red-500 text-center text-sm font-semibold mt-3 min-h-[20px]"></div>
+      
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP SCREEN -->
+<div id="screen-app" class="hidden flex h-screen overflow-hidden">
+  
+  <!-- SIDEBAR -->
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-[100] w-64 bg-gradient-to-b from-primary via-[#154d15] to-dark text-white flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.15)] transform -translate-x-full transition-transform duration-300 ease-in-out md:relative md:translate-x-0 flex-shrink-0 border-r border-white/5">
+    <div class="p-6 border-b border-white/10 text-center">
+      <h5 class="text-xl font-bold tracking-wider">E-PESANTREN</h5>
+      <small class="text-white/70">Admin Dashboard</small>
+    </div>
+    
+    <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+      <div id="nav-dashboard" class="nav-link active text-white/90 px-4 py-3 rounded-xl cursor-pointer flex items-center" onclick="switchPage('dashboard')"><i class="bi bi-speedometer2 me-3 text-lg"></i> Dashboard</div>
+      <div id="nav-pendaftaran" class="nav-link text-white/90 px-4 py-3 rounded-xl cursor-pointer flex items-center" onclick="switchPage('pendaftaran')"><i class="bi bi-person-plus-fill me-3 text-lg"></i> Pendaftaran</div>
+      <div id="nav-data-santri" class="nav-link text-white/90 px-4 py-3 rounded-xl cursor-pointer flex items-center" onclick="switchPage('data-santri')"><i class="bi bi-people-fill me-3 text-lg"></i> Data Santri</div>
+      <div id="nav-cetak" class="nav-link text-white/90 px-4 py-3 rounded-xl cursor-pointer flex items-center" onclick="switchPage('cetak')"><i class="bi bi-printer-fill me-3 text-lg"></i> Cetak Dokumen</div>
+      <div id="nav-tabungan" class="nav-link text-white/90 px-4 py-3 rounded-xl cursor-pointer flex items-center" onclick="switchPage('tabungan')"><i class="bi bi-wallet-fill me-3 text-lg"></i> Tabungan</div>
+      <div id="nav-syahriah" class="nav-link text-white/90 px-4 py-3 rounded-xl cursor-pointer flex items-center" onclick="switchPage('syahriah')"><i class="bi bi-cash-coin me-3 text-lg"></i> Syahriah</div>
+      <div id="nav-pelanggaran" class="nav-link text-white/90 px-4 py-3 rounded-xl cursor-pointer flex items-center" onclick="switchPage('pelanggaran')"><i class="bi bi-shield-exclamation-fill me-3 text-lg"></i> Pelanggaran</div>
+      <div id="nav-mutasi" class="nav-link text-white/90 px-4 py-3 rounded-xl cursor-pointer flex items-center" onclick="switchPage('mutasi')"><i class="bi bi-arrow-left-right me-3 text-lg"></i> Mutasi</div>
+    </nav>
+    <div class="p-4 border-t border-white/10">
+      <div class="nav-link text-accent px-4 py-3 rounded-xl cursor-pointer flex items-center hover:bg-white/10" onclick="logout()"><i class="bi bi-power me-3 text-lg"></i> Keluar Sistem</div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 overflow-y-auto p-8 relative">
+    
+    <!-- INDIKATOR MODE SIMULASI -->
+    <div class="md:hidden flex items-center mb-6 bg-white p-4 rounded-xl shadow-sm">
+      <button onclick="toggleSidebar()" class="text-primary text-3xl focus:outline-none">
+        <i class="bi bi-list"></i>
+      </button>
+      <span class="ml-4 font-bold text-gray-700 text-lg">Menu E-Pesantren</span>
+    </div>
+
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black bg-opacity-50 z-[90] hidden md:hidden"></div>
+
+    <!-- PAGE: DASHBOARD -->
+    <div id="page-dashboard" class="page-content">
+      <div class="flex justify-between items-center mb-8">
+        <h3 class="text-2xl font-bold text-gray-800">Dashboard Ringkasan</h3>
+        <button onclick="loadDashboard()" class="bg-white border border-primary text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg shadow-sm font-medium transition-colors flex items-center">
+          <i class="bi bi-arrow-clockwise mr-2"></i> Refresh Data
+        </button>
+      </div>
+
+      <!-- WIDGETS -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-xl p-6 shadow-sm border-l-4 border-primary flex justify-between items-center">
+          <div><h6 class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Santri Aktif</h6><h1 id="dash-total" class="text-4xl font-black text-primary">0</h1></div>
+          <i class="bi bi-people text-5xl text-primary opacity-20"></i>
+        </div>
+        <div class="bg-white rounded-xl p-6 shadow-sm border-l-4 border-accent flex justify-between items-center">
+          <div><h6 class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Total Asrama</h6><h1 id="dash-asrama" class="text-4xl font-black text-accent">0</h1></div>
+          <i class="bi bi-house-door text-5xl text-accent opacity-20"></i>
+        </div>
+        <div class="bg-white rounded-xl p-6 shadow-sm border-l-4 border-red-500 flex justify-between items-center">
+          <div><h6 class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Boyong / Lulus</h6><h1 id="dash-boyong" class="text-4xl font-black text-red-500">0</h1></div>
+          <i class="bi bi-person-dash text-5xl text-red-500 opacity-20"></i>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-xl p-5 shadow-sm border-l-4 border-blue-500 flex justify-between items-center">
+          <div><h6 class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Santri Reguler</h6><h1 id="dash-reguler" class="text-3xl font-black text-blue-500">0</h1></div>
+          <i class="bi bi-person-check text-4xl text-blue-500 opacity-20"></i>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border-l-4 border-purple-500 flex justify-between items-center">
+          <div><h6 class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Santri Yatim</h6><h1 id="dash-yatim" class="text-3xl font-black text-purple-500">0</h1></div>
+          <i class="bi bi-heart text-4xl text-purple-500 opacity-20"></i>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border-l-4 border-teal-500 flex justify-between items-center">
+          <div><h6 class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Santri Duafa</h6><h1 id="dash-duafa" class="text-3xl font-black text-teal-500">0</h1></div>
+          <i class="bi bi-wallet2 text-4xl text-teal-500 opacity-20"></i>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Pendaftaran Terbaru -->
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
+          <h6 class="font-bold text-gray-700 mb-4 flex items-center"><i class="bi bi-list-stars text-primary mr-2 text-xl"></i> Pendaftaran Terbaru</h6>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-gray-50 text-gray-500 text-xs uppercase">
+                  <th class="py-3 px-4 rounded-tl-lg font-semibold">Nama Santri</th>
+                  <th class="py-3 px-4 font-semibold">Asrama</th>
+                  <th class="py-3 px-4 rounded-tr-lg font-semibold">Tgl Masuk</th>
+                </tr>
+              </thead>
+              <tbody id="list-recent" class="text-sm divide-y divide-gray-100"></tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Distribusi Asrama -->
+        <div class="bg-white rounded-xl shadow-sm p-6">
+          <h6 class="font-bold text-gray-700 mb-4 flex items-center"><i class="bi bi-pie-chart-fill text-accent mr-2 text-xl"></i> Distribusi Per Asrama</h6>
+          <div id="list-asrama" class="space-y-3"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: PENDAFTARAN -->
+    <div id="page-pendaftaran" class="page-content hidden">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-2xl font-bold text-gray-800">Pendaftaran Santri Baru</h3>
+        <button onclick="submitSantri()" class="bg-primary hover:bg-dark text-white px-5 py-2.5 rounded-lg shadow-md font-bold transition-colors flex items-center">
+          <i class="bi bi-save mr-2"></i> SIMPAN DATA
+        </button>
+      </div>
+      
+      <form id="form-santri" class="space-y-6">
+        
+        <div class="bg-white rounded-xl shadow-sm p-6">
+          
+          <div class="border-l-4 border-primary bg-gray-50 p-4 rounded-r-lg mb-6">
+            <span class="block text-primary font-bold text-sm uppercase tracking-wider mb-4">A. Identitas Pribadi Santri</span>
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4"> 
+              
+              <div class="md:col-span-6">
+                <label class="block text-xs font-bold text-primary mb-1">ID PPS *</label>
+                <input type="text" name="id_pps" id="id_pps" class="w-full px-3 py-2 border border-primary rounded form-input text-gray-800 font-semibold" placeholder="Memuat ID..." required>
+                <p class="text-[11px] text-gray-500 mt-1">Dibuat otomatis oleh sistem, dapat diedit manual.</p>
+              </div>
+              
+              <div class="md:col-span-6">
+                <label class="block text-xs font-bold text-primary mb-1">Tanggal Masuk (Hijriah) *</label>
+                <select name="tgl_masuk_hijriah" id="tgl_masuk_hijriah" class="w-full px-3 py-2 border border-primary rounded form-input font-semibold text-gray-800" required>
+                  <option value="">Memuat Tanggal...</option>
+                  </select>
+                <p class="text-[11px] text-gray-500 mt-1">Otomatis hari ini. Ubah jika ada selisih awal bulan.</p>
+              </div>
+              <div class="md:col-span-6"><label class="block text-xs font-bold text-gray-700 mb-1">Nama Lengkap *</label><input type="text" name="nama" class="w-full px-3 py-2 border border-gray-300 rounded form-input" required></div>
+              <div class="md:col-span-6"><label class="block text-xs font-bold text-gray-700 mb-1">Nama Sesuai Akte</label><input type="text" name="nama_akte" class="w-full px-3 py-2 border border-gray-300 rounded form-input"></div>
+              <div class="md:col-span-4"><label class="block text-xs font-bold text-gray-700 mb-1">Tempat Lahir</label><input type="text" name="tmp_lahir" class="w-full px-3 py-2 border border-gray-300 rounded form-input"></div>
+              <div class="md:col-span-4"><label class="block text-xs font-bold text-gray-700 mb-1">Tanggal Lahir</label><input type="date" name="tgl_lahir" id="tgl_lahir" class="w-full px-3 py-2 border border-gray-300 rounded form-input" onchange="hitungUmurOtomatis()"></div>
+              <div class="md:col-span-4"><label class="block text-xs font-bold text-gray-700 mb-1">Umur Saat Masuk</label><input type="text" name="umur_masuk" id="umur_masuk" class="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded form-input text-gray-600 cursor-not-allowed" readonly placeholder="Otomatis terisi"></div>
+              <div class="md:col-span-4">
+                <label class="block text-xs font-bold text-gray-700 mb-1">Jenis Kelamin</label>
+                <select name="jenis_kelamin" class="w-full px-3 py-2 border border-gray-300 rounded form-input">
+                  <option value="Laki-laki">Laki-laki</option>
+                  <option value="Perempuan">Perempuan</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="border-l-4 border-primary bg-gray-50 p-4 rounded-r-lg">
+            <span class="block text-primary font-bold text-sm uppercase tracking-wider mb-4">B. Alamat & Legalitas</span>
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+              <div class="md:col-span-12"><label class="block text-xs font-bold text-gray-700 mb-1">Dsn/RT/RW</label><input type="text" name="alamat_lengkap" class="w-full px-3 py-2 border border-gray-300 rounded form-input" placeholder="Contoh: Dsn. Krajan RT 01 RW 02"></div>
+              <div class="md:col-span-4">
+                <label class="block text-xs font-bold text-gray-700 mb-1">Provinsi</label>
+                <input type="text" id="in_provinsi" name="provinsi" list="dl_provinsi" class="w-full px-3 py-2 border border-gray-300 rounded form-input" autocomplete="off" placeholder="Pilih Provinsi...">
+                <datalist id="dl_provinsi"></datalist>
+              </div>
+                <div class="md:col-span-2">
+                <label class="block text-xs font-bold text-gray-700 mb-1">Kode Pos</label>
+                <input type="text" id="in_kodepos" name="kodepos" class="w-full px-3 py-2 border border-gray-300 rounded form-input">
+              </div>
+              <div class="md:col-span-4">
+                <label class="block text-xs font-bold text-gray-700 mb-1">Kabupaten/Kota</label>
+                <input type="text" id="in_kabupaten" name="kabupaten/Kota" list="dl_kabupaten" class="w-full px-3 py-2 border border-gray-300 rounded form-input" autocomplete="off" placeholder="Pilih Kab/Kota..." disabled>
+                <datalist id="dl_kabupaten"></datalist>
+              </div>
+              <div class="md:col-span-4">
+                <label class="block text-xs font-bold text-gray-700 mb-1">Kecamatan</label>
+                <input type="text" id="in_kecamatan" name="kecamatan" list="dl_kecamatan" class="w-full px-3 py-2 border border-gray-300 rounded form-input" autocomplete="off" placeholder="Pilih Kecamatan..." disabled>
+                <datalist id="dl_kecamatan"></datalist>
+              </div>
+             <div class="md:col-span-4">
+               <label class="block text-xs font-bold text-gray-700 mb-1">Desa</label>
+               <input type="text" id="in_desa" name="desa" list="dl_desa" class="w-full px-3 py-2 border border-gray-300 rounded form-input" autocomplete="off" placeholder="Pilih Desa..." disabled>
+               <datalist id="dl_desa"></datalist>
+              </div>
+              <div class="md:col-span-6"><label class="block text-xs font-bold text-gray-700 mb-1">NIK Santri (16 Digit)</label><input type="text" name="nik" class="w-full px-3 py-2 border border-gray-300 rounded form-input"></div>
+              <div class="md:col-span-6"><label class="block text-xs font-bold text-gray-700 mb-1">Nomor Kartu Keluarga (KK)</label><input type="text" name="kk" class="w-full px-3 py-2 border border-gray-300 rounded form-input"></div>
+              <div class="md:col-span-6"><label class="block text-xs font-bold text-gray-700 mb-1">NISN</label><input type="text" name="nisn" class="w-full px-3 py-2 border border-gray-300 rounded form-input"></div>
+              <div class="md:col-span-6">
+              <label class="block text-xs font-bold text-gray-700 mb-1">Pendidikan Terakhir</label>
+             <input type="text" name="pendidikan" list="dl_pendidikan" class="w-full px-3 py-2 border border-gray-300 rounded form-input" autocomplete="off" placeholder="Pilih atau ketik...">
+             <datalist id="dl_pendidikan">
+            <option value="TAMAT SD/SEDERAJAT"></option>
+            <option value="BELUM TAMAT SD/SEDERAJAT"></option>
+            <option value="TAMAT SMP/SEDERAJAT"></option>
+            <option value="BELUM TAMAT SMP/SEDERAJAT"></option>
+            <option value="TAMAT SMA/SEDERAJAT"></option>
+            <option value="BELUM TAMAT SMA/SEDERAJAT"></option>
+            <option value="D3/SEDERAJAT"></option>
+            <option value="S1"></option>
+            <option value="S2"></option>
+            <option value="SLTA/SEDERAJAT"></option>
+              </datalist>
+             </div>
+            </div>
+
+          </div> 
+        </div> <!-- TAMBAHAN: Menutup Card 1 -->
+        
+        <div class="bg-white rounded-xl shadow-sm p-6">
+          <div class="border-l-4 border-primary bg-gray-50 p-4 rounded-r-lg">
+            <span class="block text-primary font-bold text-sm uppercase tracking-wider mb-4">C. Penempatan Di Pesantren</span>
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+              <div class="md:col-span-4"><label class="block text-xs font-bold text-gray-700 mb-1">Status Domisili</label><select name="status_domisili" class="w-full px-3 py-2 border border-gray-300 rounded form-input"><option>Mukim (Asrama)</option><option>Non-Mukim (Asrama)</option></select></div>
+              <div class="md:col-span-4">
+                <label class="block text-xs font-bold text-gray-700 mb-1">Nama Asrama (Domisili)</label>
+                <select name="asrama" class="w-full px-3 py-2 border border-gray-300 rounded form-input">
+                  <option value="">-- Pilih Asrama --</option>
+                  <option value="DAS-01">DAS-01</option>
+                  <option value="DAS-02">DAS-02</option>
+                  <option value="DKS-01">DKS-01</option>
+                  <option value="DKS-02">DKS-02</option>
+                  <option value="DKS-03">DKS-03</option>
+                  <option value="DKS-04">DKS-04</option>
+                </select>
+              </div>
+              
+              <div class="md:col-span-4">
+                <label class="block text-xs font-bold text-gray-700 mb-1">Kelas Tingkat</label>
+                <select name="kelas_tingkat" class="w-full px-3 py-2 border border-gray-300 rounded form-input">
+                  <option value="">-- Pilih Kelas --</option>
+                  <option value="Sifir A">Sifir A</option>
+                  <option value="Sifir B">Sifir B</option>
+                  <option value="1-A Ibtidaiyah">1-A Ibtidaiyah</option>
+                  <option value="1-B Ibtidaiyah">1-B Ibtidaiyah</option>
+                  <option value="2-A Ibtidaiyah">2-A Ibtidaiyah</option>
+                  <option value="2-B Ibtidaiyah">2-B Ibtidaiyah</option>
+                  <option value="3-A Ibtidaiyah">3-A Ibtidaiyah</option>
+                  <option value="3-B Ibtidaiyah">3-B Ibtidaiyah</option>
+                  <option value="4-A Ibtidaiyah">4-A Ibtidaiyah</option>
+                  <option value="4-B Ibtidaiyah">4-B Ibtidaiyah</option>
+                  <option value="5-A Ibtidaiyah">5-A Ibtidaiyah</option>
+                  <option value="5-B Ibtidaiyah">5-B Ibtidaiyah</option>
+                  <option value="6-A Ibtidaiyah">6-A Ibtidaiyah</option>
+                  <option value="6-B Ibtidaiyah">6-B Ibtidaiyah</option>
+                </select>
+              </div>
+              
+              <div class="md:col-span-4">
+                <label class="block text-xs font-bold text-gray-700 mb-1">Tingkatan Qur'an</label>
+                <select name="tingkat_quran" class="w-full px-3 py-2 border border-gray-300 rounded form-input">
+                  <option value="">-- Pilih Tingkatan --</option>
+                  <option value="TPQ">TPQ</option>
+                  <option value="MQS">MQS</option>
+                  <option value="Marhalah">Marhalah</option>
+                </select>
+              </div>
+              
+              <div class="md:col-span-4">
+                <label class="block text-xs font-bold text-gray-700 mb-1">Kelas Qur'an</label>
+                <select name="kelas_quran" class="w-full px-3 py-2 border border-gray-300 rounded form-input">
+                  <option value="">-- Pilih Kelas Qur'an --</option>
+                  <option value="Jilid 1">Jilid 1</option>
+                  <option value="Jilid 2">Jilid 2</option>
+                  <option value="Jilid 3">Jilid 3</option>
+                  <option value="Jilid 4">Jilid 4</option>
+                  <option value="Jilid 5">Jilid 5</option>
+                  <option value="Ghorib">Ghorib</option>
+                  <option value="Qur'an MQS">Qur'an MQS</option>
+                  <option value="MARHALAH 1">MARHALAH 1</option>
+                  <option value="MARHALAH 2">MARHALAH 2</option>
+                  <option value="MARHALAH 3">MARHALAH 3</option>
+                  <option value="MARHALAH 4">MARHALAH 4</option>
+                  <option value="MARHALAH 5">MARHALAH 5</option>
+                  <option value="MARHALAH 6">MARHALAH 6</option>
+                </select>
+              </div>
+              <div class="md:col-span-4"><label class="block text-xs font-bold text-gray-700 mb-1">Status santri</label><select name="status_santri" class="w-full px-3 py-2 border border-gray-300 rounded form-input"><option>Reguler</option><option>Duafa</option><option>Yatim</option></select></div>
+            </div>
+          </div>
+        </div>
+        
+      <div class="bg-white rounded-xl shadow-sm p-6">
+          <div class="border-l-4 border-primary bg-gray-50 p-4 rounded-r-lg mb-6">
+            <span class="block text-primary font-bold text-sm uppercase tracking-wider mb-4">D. Data Orang Tua Kandung</span>
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+              <div class="md:col-span-6"><label class="block text-xs font-bold text-gray-700 mb-1">Nama Ayah</label><input type="text" name="ayah" class="w-full px-3 py-2 border border-gray-300 rounded form-input"></div>
+              <div class="md:col-span-6"><label class="block text-xs font-bold text-gray-700 mb-1">NIK Ayah</label><input type="text" name="nik_ayah" class="w-full px-3 py-2 border border-gray-300 rounded form-input"></div>
+              <div class="md:col-span-6"><label class="block text-xs font-bold text-gray-700 mb-1">Nama Ibu</label><input type="text" name="ibu" class="w-full px-3 py-2 border border-gray-300 rounded form-input"></div>
+              <div class="md:col-span-6"><label class="block text-xs font-bold text-gray-700 mb-1">NIK Ibu</label><input type="text" name="nik_ibu" class="w-full px-3 py-2 border border-gray-300 rounded form-input"></div>
+              <div class="md:col-span-12"><label class="block text-xs font-bold text-gray-700 mb-1">Nomor KK Orang Tua</label><input type="text" name="kk_ortu" class="w-full px-3 py-2 border border-gray-300 rounded form-input"></div>
+            </div>
+          </div>
+
+          <div class="border-l-4 border-primary bg-gray-50 p-4 rounded-r-lg">
+            <span class="block text-primary font-bold text-sm uppercase tracking-wider mb-4">E. Data Wali Santri</span>
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+              <div class="md:col-span-6"><label class="block text-xs font-bold text-gray-700 mb-1">Nama Wali</label><input type="text" name="wali" class="w-full px-3 py-2 border border-gray-300 rounded form-input"></div>
+              <div class="md:col-span-6"><label class="block text-xs font-bold text-gray-700 mb-1">Kontak Wali (WA/HP)</label><input type="text" name="kontak_wali" class="w-full px-3 py-2 border border-gray-300 rounded form-input"></div>
+              <div class="md:col-span-4"><label class="block text-xs font-bold text-gray-700 mb-1">NIK Wali</label><input type="text" name="nik_wali" class="w-full px-3 py-2 border border-gray-300 rounded form-input"></div>
+              <div class="md:col-span-4"><label class="block text-xs font-bold text-gray-700 mb-1">KK Wali</label><input type="text" name="kk_wali" class="w-full px-3 py-2 border border-gray-300 rounded form-input"></div>
+              <div class="md:col-span-4"><label class="block text-xs font-bold text-gray-700 mb-1">Pekerjaan Wali</label><input type="text" name="pekerjaan_wali" class="w-full px-3 py-2 border border-gray-300 rounded form-input"></div>
+              <div class="md:col-span-4"><label class="block text-xs font-bold text-gray-700 mb-1">Pendidikan Wali</label><input type="text" name="pendidikan_wali" class="w-full px-3 py-2 border border-gray-300 rounded form-input" placeholder="SD/SMP/SMA/S1..."></div>
+              <div class="md:col-span-4"><label class="block text-xs font-bold text-gray-700 mb-1">Status Hubungan Wali</label><input type="text" name="status_wali" class="w-full px-3 py-2 border border-gray-300 rounded form-input" placeholder="Paman/Kakak/Dll"></div>
+              <div class="md:col-span-8">
+                <div class="flex justify-between items-center mb-1">
+                  <label class="block text-xs font-bold text-gray-700 mb-0">Alamat Lengkap Wali</label>
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="cek-alamat-sama" class="form-checkbox text-primary border-gray-300 rounded" onchange="copyAlamatSantri(this)">
+                    <span class="ml-2 text-[11px] font-bold text-primary">Sama dgn alamat santri</span>
+                  </label>
+                </div>
+                <input type="text" name="alamat_wali" class="w-full px-3 py-2 border border-gray-300 rounded form-input">
+              </div>
+            </div>
+          </div>
+        </div> 
+      </form>
+    </div> <!-- INI ADALAH DIV PENUTUP #page-pendaftaran -->
+
+    <!-- PAGE: DATA SANTRI LENGKAP -->
+    <div id="page-data-santri" class="page-content hidden">
+       <div class="bg-white rounded-xl shadow-sm p-6">
+         <div class="flex flex-col mb-6 gap-4">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+              <h4 class="text-xl font-bold text-gray-800 mb-2 md:mb-0">Database Master Santri</h4>
+              
+              <div class="flex gap-2">
+                <button onclick="exportExcel()" class="bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-3 py-2 rounded-lg shadow-sm transition-colors flex items-center">
+                  <i class="bi bi-file-earmark-excel mr-1"></i> Excel
+                </button>
+                <button onclick="exportPDFData()" class="bg-red-500 hover:bg-red-600 text-white text-sm font-semibold px-3 py-2 rounded-lg shadow-sm transition-colors flex items-center">
+                  <i class="bi bi-file-earmark-pdf mr-1"></i> PDF
+                </button>
+                <button onclick="printData()" class="bg-gray-700 hover:bg-gray-800 text-white text-sm font-semibold px-3 py-2 rounded-lg shadow-sm transition-colors flex items-center">
+                  <i class="bi bi-printer mr-1"></i> Print
+                </button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-3 bg-gray-50 p-3 rounded-lg border border-gray-200">
+  <select id="filterAsrama" onchange="filterTabelLengkap()" class="w-full px-3 py-2 border border-gray-300 rounded form-input text-sm">
+    <option value="">Semua Asrama</option>
+    <option value="DAS-01">DAS-01</option>
+    <option value="DAS-02">DAS-02</option>
+    <option value="DKS-01">DKS-01</option>
+    <option value="DKS-02">DKS-02</option>
+    <option value="DKS-03">DKS-03</option>
+    <option value="DKS-04">DKS-04</option>
+  </select>
+
+  <select id="filterKelas" onchange="filterTabelLengkap()" class="w-full px-3 py-2 border border-gray-300 rounded form-input text-sm">
+    <option value="">Semua Kelas</option>
+    <option value="Sifir A">Sifir A</option>
+    <option value="Sifir B">Sifir B</option>
+    <option value="1-A Ibtidaiyah">1-A Ibtidaiyah</option>
+    <option value="1-B Ibtidaiyah">1-B Ibtidaiyah</option>
+    <option value="2-A Ibtidaiyah">2-A Ibtidaiyah</option>
+    <option value="2-B Ibtidaiyah">2-B Ibtidaiyah</option>
+    <option value="3-A Ibtidaiyah">3-A Ibtidaiyah</option>
+    <option value="3-B Ibtidaiyah">3-B Ibtidaiyah</option>
+    <option value="4-A Ibtidaiyah">4-A Ibtidaiyah</option>
+    <option value="4-B Ibtidaiyah">4-B Ibtidaiyah</option>
+    <option value="5-A Ibtidaiyah">5-A Ibtidaiyah</option>
+    <option value="5-B Ibtidaiyah">5-B Ibtidaiyah</option>
+    <option value="6-A Ibtidaiyah">6-A Ibtidaiyah</option>
+    <option value="6-B Ibtidaiyah">6-B Ibtidaiyah</option>
+  </select>
+
+  <select id="filterStatus" onchange="filterTabelLengkap()" class="w-full px-3 py-2 border border-gray-300 rounded form-input text-sm">
+    <option value="">Semua Tipe Santri</option>
+    <option value="Reguler">Reguler</option>
+    <option value="Yatim">Yatim</option>
+    <option value="Duafa">Duafa</option>
+  </select>
+
+  <!-- TAMBAHAN: Filter Status Keaktifan -->
+  <select id="filterAktif" onchange="filterTabelLengkap()" class="w-full px-3 py-2 border border-gray-300 rounded form-input text-sm">
+    <option value="">Semua Status Aktif</option>
+    <option value="Aktif">Aktif</option>
+    <option value="Boyong">Boyong</option>
+    <option value="Pindah">Pindah</option>
+  </select>
+
+  <div class="relative w-full">
+                 <i class="bi bi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                 <input type="text" id="searchSantriGlobal" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded form-input text-sm" placeholder="Cari Nama/ID..." onkeyup="filterTabelLengkap()">
+              </div>
+            </div>
+          </div> <!-- INI DIA TAG DIV PENYELAMAT YANG SEMPAT HILANG -->
+
+         <div class="overflow-x-auto">
+           <table class="w-full text-left border-collapse" id="tableUtama">
+  <thead>
+    <tr class="bg-green-50 text-primary text-xs uppercase tracking-wider border-y border-green-200">
+      <th class="py-3 px-4 font-bold">ID PPS</th>
+      <th class="py-3 px-4 font-bold">Nama Lengkap</th>
+      <th class="py-3 px-4 font-bold text-center">Status</th> <!-- TAMBAHAN -->
+      <th class="py-3 px-4 font-bold">Asrama</th>
+      <th class="py-3 px-4 font-bold">Tgl Masuk</th>
+      <th class="py-3 px-4 font-bold text-center">Profil</th>
+    </tr>
+  </thead>
+             <tbody id="tabel-santri-lengkap" class="text-sm divide-y divide-gray-100"></tbody>
+           </table>
+         </div>
+         <!-- Paginasi Data Santri -->
+         <div class="mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="text-sm text-gray-600 font-medium">
+              Tampilkan 
+              <select id="showEntries" onchange="changeEntries()" class="border border-gray-300 rounded px-2 py-1 mx-1 focus:border-primary focus:outline-none cursor-pointer">
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="500">500</option>
+              </select>
+              Entri
+            </div>
+            <div id="pagination-santri" class="flex justify-end gap-2 flex-wrap"></div>
+          </div>
+       </div> <!-- Penutup Card Putih Data Santri -->
+    </div> <!-- Penutup #page-data-santri -->
+   
+    <!-- PAGE: CETAK -->
+    <div id="page-cetak" class="page-content hidden">
+      <div class="bg-white rounded-xl shadow-sm p-6">
+        <div class="mb-6">
+          <h4 class="text-xl font-bold text-gray-800 flex items-center"><i class="bi bi-printer text-primary mr-2"></i> Cetak Salinan Pendaftaran</h4>
+        </div>
+        
+        <div class="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 rounded text-sm mb-6 flex items-start">
+          <i class="bi bi-info-circle-fill mt-0.5 mr-3 text-lg"></i>
+          <p>Cari nama santri yang ingin dicetak salinan pendaftarannya, lalu klik tombol <strong>Cetak Surat</strong> untuk mengunduh PDF.</p>
+        </div>
+
+        <div class="relative mb-6">
+          <i class="bi bi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+          <input type="text" id="searchCetak" class="w-full pl-10 pr-4 py-3 border border-primary rounded-lg form-input shadow-sm" placeholder="Ketik Nama atau ID Santri untuk mencari..." onkeyup="filterCetak()">
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse" id="tableCetak">
+            <thead>
+              <tr class="bg-gray-50 text-gray-500 text-xs uppercase border-y border-gray-200">
+                <th class="py-3 px-4 font-bold">ID PPS</th>
+                <th class="py-3 px-4 font-bold">Nama Santri</th>
+                <th class="py-3 px-4 font-bold">Asrama / Kelas</th>
+                <th class="py-3 px-4 font-bold text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tabel-cetak-santri" class="text-sm divide-y divide-gray-100"></tbody>
+          </table>
+        </div>
+        <!-- Paginasi Cetak -->
+        <div id="pagination-cetak" class="mt-6 flex justify-end gap-2"></div>
+      </div>
+    </div>
+
+    <div id="page-tabungan" class="page-content hidden">
+      <div class="mb-6">
+        <h3 class="text-2xl font-bold text-gray-800">Transaksi Tabungan</h3>
+      </div>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-5 bg-white rounded-xl shadow-sm p-6 border-t-4 border-accent">
+          <h5 class="font-bold text-gray-700 mb-4 border-b pb-2">Input Transaksi Baru</h5>
+          <form id="form-tabungan" class="space-y-4" onsubmit="event.preventDefault(); submitTabungan();">
+            <div>
+              <label class="block text-xs font-bold text-gray-700 mb-1">ID PPS Santri *</label>
+              <input type="text" name="id_pps" id="input_tabungan_id" class="w-full px-3 py-2 border border-gray-300 rounded focus:border-accent focus:outline-none" placeholder="Ketik ID PPS..." onkeyup="cekIdTabungan()" required autocomplete="off">
+            </div>
+            
+            <div id="info_santri_tabungan" class="bg-gray-50 p-3 rounded-lg border border-gray-200 hidden">
+              <div class="text-xs text-gray-500 mb-1">Nama: <span id="txt_tabungan_nama" class="font-bold text-gray-800 text-sm"></span></div>
+              <div class="text-xs text-gray-500 mb-1">Domisili: <span id="txt_tabungan_domisili" class="font-bold text-gray-800"></span></div>
+              <div class="text-xs text-gray-500 border-t pt-1 mt-1">Total Saldo: <span id="txt_tabungan_saldo" class="font-black text-primary text-base"></span></div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-gray-700 mb-1">Jenis Transaksi *</label>
+              <select name="jenis_transaksi" class="w-full px-3 py-2 border border-gray-300 rounded focus:border-accent focus:outline-none" required>
+                <option value="Setor">Setor Tabungan (Masuk)</option>
+                <option value="Tarik">Tarik Tabungan (Keluar)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-700 mb-1">Nominal (Rp) *</label>
+              <input type="number" name="nominal" class="w-full px-3 py-2 border border-gray-300 rounded focus:border-accent focus:outline-none" placeholder="Contoh: 50000" required>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-700 mb-1">Keterangan / Catatan</label>
+              <input type="text" name="keterangan" class="w-full px-3 py-2 border border-gray-300 rounded focus:border-accent focus:outline-none" placeholder="Misal: Uang saku bulan April">
+            </div>
+            <button type="submit" class="w-full bg-primary hover:bg-dark text-white font-bold py-3 rounded-lg shadow-md transition-colors mt-2">
+              <i class="bi bi-save mr-2"></i> Simpan Transaksi
+            </button>
+          </form>
+        </div>
+
+        <div class="lg:col-span-7 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+          <h5 class="font-bold text-gray-700 mb-4 flex items-center border-b pb-2">
+            <i class="bi bi-clock-history mr-2 text-primary"></i> Riwayat Tabungan Terakhir
+          </h5>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-gray-50 text-gray-500 text-[11px] uppercase tracking-wider border-b border-gray-200">
+                  <th class="py-3 px-3 font-semibold">Tgl / Waktu</th>
+                  <th class="py-3 px-3 font-semibold">Jenis</th>
+                  <th class="py-3 px-3 font-semibold text-right">Nominal</th>
+                  <th class="py-3 px-3 font-semibold text-right">Saldo Akhir</th>
+                </tr>
+              </thead>
+              <tbody id="tabel-riwayat-tabungan" class="text-sm divide-y divide-gray-100">
+                <tr>
+                  <td colspan="4" class="py-16 text-center text-gray-400">
+                    <i class="bi bi-wallet2 text-5xl block mb-3 opacity-30"></i>
+                    Sistem siap. Ketik ID PPS di samping untuk memunculkan riwayat.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="page-syahriah" class="page-content hidden">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-2xl font-bold text-gray-800">Manajemen Syahriah (SPP)</h3>
+        <div class="flex gap-2">
+          <button onclick="bukaModalLibur()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-sm font-medium transition-colors flex items-center text-sm">
+            <i class="bi bi-calendar-x mr-2"></i> Atur Bulan Libur
+          </button>
+          <button onclick="loadDataSyahriah()" class="bg-white border border-primary text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg shadow-sm font-medium transition-colors flex items-center text-sm">
+            <i class="bi bi-arrow-clockwise mr-2"></i> Refresh
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div class="bg-white rounded-xl p-5 shadow-sm border-l-4 border-green-500 flex justify-between items-center">
+          <div><h6 class="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">Pemasukan Bulan Ini</h6><h1 id="rek-nominal" class="text-2xl font-black text-green-600">Rp 0</h1></div>
+          <i class="bi bi-cash-stack text-4xl text-green-500 opacity-20"></i>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border-l-4 border-blue-500 flex justify-between items-center">
+          <div><h6 class="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">Santri Lunas</h6><h1 id="rek-lunas" class="text-3xl font-black text-blue-500">0</h1></div>
+          <i class="bi bi-check-circle text-4xl text-blue-500 opacity-20"></i>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border-l-4 border-red-500 flex justify-between items-center">
+          <div><h6 class="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">Santri Menunggak</h6><h1 id="rek-tunggak" class="text-3xl font-black text-red-500">0</h1></div>
+          <i class="bi bi-exclamation-circle text-4xl text-red-500 opacity-20"></i>
+        </div>
+      </div>
+
+      <div class="bg-white p-4 rounded-xl shadow-sm mb-6 flex flex-wrap gap-4 items-end border border-gray-100">
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Tahun Ajaran/Pembukuan</label>
+          <select id="filter-tahun-syahriah" onchange="loadDataSyahriah()" class="px-3 py-2 border border-gray-300 rounded form-input text-sm w-32">
+            <option value="2026">2026</option>
+            <option value="2025">2025</option>
+            <option value="2024">2024</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Rekap Berdasarkan Bulan</label>
+          <select id="filter-bulan-syahriah" onchange="kalkulasiRekapSyahriah()" class="px-3 py-2 border border-gray-300 rounded form-input text-sm w-40">
+            </select>
+        </div>
+        <div class="relative flex-1 min-w-[200px]">
+          <i class="bi bi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+          <input type="text" id="searchSyahriah" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded form-input text-sm" placeholder="Cari Nama / ID PPS..." onkeyup="renderTabelSyahriah()">
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm p-0 overflow-hidden border border-gray-200">
+        <div class="overflow-x-auto w-full">
+          <table class="w-full text-left border-collapse min-w-max text-xs" id="tableSyahriah">
+            <thead>
+              <tr class="bg-primary text-white uppercase tracking-wider" id="head-bulan-syahriah">
+                <th class="py-3 px-3 font-bold sticky left-0 bg-primary z-10 w-36 md:w-64 border-r border-white/20 whitespace-normal leading-tight">
+                  Data Santri <span class="hidden md:inline">(Reguler)</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="tabel-matriks-syahriah" class="divide-y divide-gray-200 bg-white">
+               <tr><td colspan="13" class="py-8 text-center text-gray-400">Klik Refresh Data untuk memuat matriks...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="modalBulanLibur" class="fixed inset-0 bg-black bg-opacity-50 z-[4000] hidden flex items-center justify-center p-4">
+      <div class="bg-white rounded-xl shadow-2xl w-full max-w-md transform scale-95 transition-transform duration-200" id="modalLiburContent">
+        <div class="bg-gray-800 text-white px-6 py-4 rounded-t-xl flex justify-between items-center">
+          <h5 class="text-lg font-bold flex items-center"><i class="bi bi-calendar-x mr-2"></i> Pengaturan Bulan Libur</h5>
+          <button onclick="tutupModalLibur()" class="text-gray-300 hover:text-white focus:outline-none"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="p-6">
+          <p class="text-xs text-gray-500 mb-4">Centang bulan yang <b>BEBAS BIAYA</b> (Bulan Libur). Bulan ini tidak akan dihitung sebagai tunggakan.</p>
+          <div class="grid grid-cols-2 gap-3 text-sm" id="container-checkbox-libur">
+            </div>
+        </div>
+        <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-2 bg-gray-50 rounded-b-xl">
+          <button onclick="tutupModalLibur()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition-colors text-sm font-bold">Batal</button>
+          <button onclick="simpanBulanLibur()" class="bg-primary hover:bg-dark text-white px-4 py-2 rounded-lg transition-colors text-sm font-bold">Simpan Pengaturan</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="modalPreviewKuitansi" class="fixed inset-0 bg-black bg-opacity-70 z-[5000] hidden flex items-center justify-center p-4">
+      <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col transform scale-95 transition-transform duration-200" id="modalKuitansiContent">
+        <div class="bg-primary text-white px-6 py-4 rounded-t-xl flex justify-between items-center">
+          <h5 class="text-lg font-bold flex items-center"><i class="bi bi-file-earmark-pdf mr-2"></i> Preview Kuitansi</h5>
+          <button onclick="tutupPreviewKuitansi()" class="text-white hover:text-gray-200 focus:outline-none"><i class="bi bi-x-lg text-xl"></i></button>
+        </div>
+        
+        <div class="flex-1 w-full bg-gray-100 p-2 relative" id="pdf-container">
+           </div>
+
+        <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50 rounded-b-xl">
+          <button onclick="tutupPreviewKuitansi()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold px-5 py-2.5 rounded-lg transition-colors">Tutup</button>
+          <button onclick="printKuitansiDariPreview()" class="bg-green-600 hover:bg-green-700 text-white font-bold px-5 py-2.5 rounded-lg transition-colors flex items-center shadow-md">
+            <i class="bi bi-printer mr-2"></i> Cetak ke Printer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: PELANGGARAN -->
+    <div id="page-pelanggaran" class="page-content hidden">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-2xl font-bold text-gray-800">Manajemen Pelanggaran</h3>
+        <div class="flex gap-2">
+          <!-- Tombol Cetak Baru -->
+          <button onclick="cetakPDFPelanggaran()" class="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-lg shadow-sm font-medium transition-colors flex items-center text-sm">
+            <i class="bi bi-printer mr-2"></i> Cetak PDF
+          </button>
+          <button onclick="loadDataPelanggaran()" class="bg-white border border-primary text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg shadow-sm font-medium transition-colors flex items-center text-sm">
+            <i class="bi bi-arrow-clockwise mr-2"></i> Refresh
+          </button>
+          <button onclick="bukaModalPelanggaran()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow-sm font-medium transition-colors flex items-center text-sm">
+            <i class="bi bi-plus-lg mr-2"></i> Tambah Pelanggaran
+          </button>
+        </div>
+      </div>
+
+      <!-- MINI DASBOR STATISTIK -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div class="bg-white rounded-xl p-5 shadow-sm border-l-4 border-red-500 flex justify-between items-center">
+          <div><h6 class="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">Total Pelanggaran</h6><h1 id="plg-total" class="text-3xl font-black text-red-600">0</h1></div>
+          <i class="bi bi-exclamation-triangle text-4xl text-red-500 opacity-20"></i>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border-l-4 border-orange-500 flex justify-between items-center">
+          <div><h6 class="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">Asrama Terbanyak</h6><h1 id="plg-asrama-max" class="text-xl font-black text-orange-600">-</h1></div>
+          <i class="bi bi-buildings text-4xl text-orange-500 opacity-20"></i>
+        </div>
+        <div class="bg-white rounded-xl p-5 shadow-sm border-l-4 border-yellow-500 flex justify-between items-center">
+          <div><h6 class="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">Kasus Terbanyak</h6><h1 id="plg-kasus-max" class="text-xl font-black text-yellow-600">-</h1></div>
+          <i class="bi bi-clipboard-data text-4xl text-yellow-500 opacity-20"></i>
+        </div>
+      </div>
+
+      <!-- FILTER BERLAPIS -->
+      <div class="bg-white p-4 rounded-xl shadow-sm mb-6 flex flex-wrap gap-3 items-end border border-gray-100">
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Tahun (H)</label>
+          <!-- Tahun default diubah menjadi 1448 -->
+          <input type="number" id="filter-plg-tahun" value="1448" onchange="loadDataPelanggaran()" class="px-3 py-2 border border-gray-300 rounded form-input text-sm w-24">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Bulan</label>
+          <select id="filter-plg-bulan" onchange="renderTabelPelanggaran()" class="px-3 py-2 border border-gray-300 rounded form-input text-sm w-32">
+            <option value="">Semua Bulan</option>
+            <option value="Muharram">Muharram</option><option value="Shafar">Shafar</option><option value="Rabiul Awal">Rabiul Awal</option><option value="Rabiul Akhir">Rabiul Akhir</option><option value="Jumadil Awal">Jumadil Awal</option><option value="Jumadil Akhir">Jumadil Akhir</option><option value="Rajab">Rajab</option><option value="Syaban">Sya'ban</option><option value="Ramadhan">Ramadhan</option><option value="Syawwal">Syawwal</option><option value="Dzulqaidah">Dzulqaidah</option><option value="Dzulhijjah">Dzulhijjah</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Wilayah</label>
+          <select id="filter-plg-wilayah" onchange="updateFilterKamarPlg(); renderTabelPelanggaran()" class="px-3 py-2 border border-gray-300 rounded form-input text-sm w-32">
+            <option value="">Semua Wilayah</option>
+            <option value="DAS">DAS</option>
+            <option value="DKS">DKS</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Kamar Spesifik</label>
+          <select id="filter-plg-kamar" onchange="renderTabelPelanggaran()" class="px-3 py-2 border border-gray-300 rounded form-input text-sm w-32">
+            <option value="">Semua Kamar</option>
+          </select>
+        </div>
+        <div class="relative flex-1 min-w-[200px]">
+          <i class="bi bi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+          <input type="text" id="filter-plg-search" class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded form-input text-sm" placeholder="Cari Nama / ID / Kasus..." onkeyup="renderTabelPelanggaran()">
+        </div>
+      </div>
+
+      <!-- TABEL DATA -->
+      <div class="bg-white rounded-xl shadow-sm p-0 overflow-hidden border border-gray-200">
+        <div class="overflow-x-auto w-full">
+          <table class="w-full text-left border-collapse min-w-max text-xs">
+            <thead>
+              <!-- Tambahan whitespace-nowrap dan min-w untuk responsivitas -->
+              <tr class="bg-red-50 text-red-800 uppercase tracking-wider border-b border-red-200">
+                <th class="py-3 px-4 font-bold whitespace-nowrap">Tgl (Hijriah)</th>
+                <th class="py-3 px-4 font-bold whitespace-nowrap">Santri (ID)</th>
+                <th class="py-3 px-4 font-bold whitespace-nowrap">Domisili & Kelas</th>
+                <th class="py-3 px-4 font-bold min-w-[280px]">Jenis & Bentuk Pelanggaran</th>
+                <th class="py-3 px-4 font-bold min-w-[250px]">Takziran</th>
+              </tr>
+            </thead>
+            <tbody id="tabel-matriks-pelanggaran" class="divide-y divide-gray-200 bg-white">
+               <tr><td colspan="5" class="py-8 text-center text-gray-400">Klik Refresh Data untuk memuat daftar pelanggaran...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div> <!-- AKHIR PAGE PELANGGARAN -->
+
+    <!-- PAGE: MUTASI & LAPORAN -->
+    <div id="page-mutasi" class="page-content hidden">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-2xl font-bold text-gray-800">Manajemen Laporan Mutasi</h3>
+      </div>
+
+      <!-- FILTER BOX -->
+      <div class="w-full bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
+        <div class="bg-gradient-to-r from-[#1a5d1a] to-[#0d360d] px-6 py-3 text-white flex justify-between items-center rounded-t-xl">
+          <h2 class="text-lg font-bold uppercase tracking-wide">Filter Data Mutasi & Warga</h2>
+          <i class="bi bi-funnel-fill text-xl opacity-80"></i>
+        </div>
+        <div class="p-5 flex flex-col md:flex-row gap-4 items-end">
+          <div class="w-full md:w-1/4">
+            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Tipe Asrama</label>
+            <select id="mutasiAsrama" class="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-[#1a5d1a] outline-none font-semibold text-gray-700">
+              <option value="DAS">Daerah DAS</option>
+              <option value="DKS">Daerah DKS</option>
+            </select>
+          </div>
+          <div class="flex-1 w-full">
+            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Bulan Hijriah</label>
+            <select id="mutasiBulan" class="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-[#1a5d1a] outline-none font-semibold text-gray-700">
+              <option value="Muharram">Muharram</option><option value="Shafar">Shafar</option><option value="Rabiul Awal">Rabiul Awal</option><option value="Rabiul Akhir">Rabiul Akhir</option><option value="Jumadil Awal">Jumadil Awal</option><option value="Jumadil Akhir">Jumadil Akhir</option><option value="Rajab">Rajab</option><option value="Syaban">Sya'ban</option><option value="Ramadhan">Ramadhan</option><option value="Syawwal" selected>Syawwal</option><option value="Dzulqaidah">Dzulqaidah</option><option value="Dzulhijjah">Dzulhijjah</option>
+            </select>
+          </div>
+          <div class="w-full md:w-1/4">
+            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Tahun Hijriah</label>
+            <input type="number" id="mutasiTahun" value="1447" class="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-[#1a5d1a] outline-none font-semibold text-gray-700">
+          </div>
+          <button onclick="tampilkanDasborMutasi()" class="w-full md:w-auto bg-[#1a5d1a] hover:bg-[#0d360d] text-white font-bold px-6 py-2 rounded shadow transition-colors flex justify-center items-center">
+            <i class="bi bi-search mr-2"></i> Tampilkan
+          </button>
+        </div>
+      </div>
+
+      <!-- HASIL DASBOR MUTASI -->
+      <div id="dasbor-mutasi-hasil" class="w-full hidden flex-col gap-6 pb-10">
+        <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+          <h3 class="font-bold text-gray-800">Hasil Rekap: <span id="txt-periode-mutasi" class="text-[#1a5d1a]">Bulan Tahun</span></h3>
+          <button onclick="cetakPDFMutasi()" class="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded shadow flex items-center transition-colors text-sm">
+            <i class="bi bi-file-earmark-pdf mr-2"></i> Export Laporan PDF
+          </button>
+        </div>
+
+        <!-- Tabel Warga Kamar -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
+          <h4 class="font-bold text-gray-700 p-4 border-b bg-gray-50 text-sm"><i class="bi bi-door-open-fill text-[#1a5d1a] mr-2"></i>A.1.5. Data Warga Perkamar</h4>
+          <table class="w-full text-center border-collapse">
+            <thead>
+              <tr class="bg-gray-50 text-gray-600 text-[11px] uppercase border-b"><th class="border p-2" rowspan="2">NO</th><th class="border p-2" rowspan="2">Kamar</th><th class="border p-2" rowspan="2">Awal Bulan</th><th class="border p-2" colspan="2">Baru</th><th class="border p-2" colspan="3">Keluar</th><th class="border p-2" rowspan="2">Akhir Bulan</th></tr>
+              <tr class="bg-gray-50 text-gray-600 text-[10px] uppercase"><th class="border p-2">Baru</th><th class="border p-2">Mutasi Antar Kamar</th><th class="border p-2">Mutasi Antar Kamar</th><th class="border p-2">Berhenti</th><th class="border p-2">Diberhentikan</th></tr>
+            </thead>
+            <tbody id="tb-mutasi-kamar" class="text-sm"></tbody>
+          </table>
+        </div>
+
+        <!-- Tabel Madrasah -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
+          <h4 class="font-bold text-gray-700 p-4 border-b bg-gray-50 text-sm"><i class="bi bi-book-half text-[#1a5d1a] mr-2"></i>A.1.6. Data Warga Sesuai Kelas Madrasah</h4>
+          <table class="w-full text-center border-collapse">
+            <thead>
+              <tr class="bg-gray-50 text-gray-600 text-[11px] uppercase border-b"><th class="border p-2" rowspan="2">NO</th><th class="border p-2" rowspan="2">Kelas</th><th class="border p-2" rowspan="2">Awal Bulan</th><th class="border p-2" colspan="2">Baru</th><th class="border p-2" colspan="3">Keluar</th><th class="border p-2" rowspan="2">Akhir Bulan</th></tr>
+              <tr class="bg-gray-50 text-gray-600 text-[10px] uppercase"><th class="border p-2">Baru</th><th class="border p-2">Mutasi Antar Kelas</th><th class="border p-2">Mutasi Kamar</th><th class="border p-2">Berhenti</th><th class="border p-2">Diberhentikan</th></tr>
+            </thead>
+            <tbody id="tb-mutasi-madrasah" class="text-sm"></tbody>
+          </table>
+        </div>
+
+        <!-- Tabel Rincian Mutasi -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
+          <h4 class="font-bold text-gray-700 p-4 border-b bg-gray-50 text-sm"><i class="bi bi-arrow-left-right text-[#1a5d1a] mr-2"></i>Rincian Riwayat Mutasi / Keluar</h4>
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-gray-50 text-gray-600 text-[11px] uppercase border-b">
+                <th class="p-3 border-r">NO</th><th class="p-3 border-r">Tanggal</th><th class="p-3 border-r">Nama Santri</th><th class="p-3 border-r">Asal</th><th class="p-3 border-r">Tujuan</th><th class="p-3">Keterangan / Alasan</th>
+              </tr>
+            </thead>
+            <tbody id="tb-mutasi-detail" class="text-sm"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<!-- MODAL INPUT PELANGGARAN BARU -->
+<div id="modalInputPelanggaran" class="fixed inset-0 bg-black bg-opacity-50 z-[4000] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl transform scale-95 transition-transform duration-200" id="modalPelanggaranContent">
+    <div class="bg-red-600 text-white px-6 py-4 rounded-t-xl flex justify-between items-center">
+      <h5 class="text-lg font-bold flex items-center"><i class="bi bi-exclamation-triangle-fill mr-2"></i> Input Pelanggaran Baru</h5>
+      <button onclick="tutupModalPelanggaran()" class="text-white hover:text-gray-200 focus:outline-none"><i class="bi bi-x-lg"></i></button>
+    </div>
+    
+    <form id="form-pelanggaran" onsubmit="event.preventDefault(); submitPelanggaran();">
+      <div class="p-6 overflow-y-auto max-h-[70vh] space-y-4">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">ID PPS Santri *</label>
+            <input type="text" name="id_pps" id="plg_id_pps" class="w-full px-3 py-2 border border-gray-300 rounded focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none uppercase font-bold text-primary" placeholder="Ketik ID PPS..." onkeyup="cekIdPelanggaran()" required autocomplete="off">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Tanggal Pelanggaran (Hijriah) *</label>
+            <select name="tgl_hijriah" id="plg_tgl_hijriah" class="w-full px-3 py-2 border border-gray-300 rounded focus:border-red-500 outline-none font-semibold text-gray-800" required></select>
+          </div>
+        </div>
+
+        <!-- INFO SANTRI OTOMATIS (DOUBLE AUTO-FILL) -->
+        <div id="plg_info_santri" class="bg-red-50 p-3 rounded-lg border border-red-200 hidden">
+          <div class="grid grid-cols-2 gap-2 text-sm">
+            <div><span class="text-gray-500 text-[10px] uppercase font-bold block">Nama Lengkap:</span><span id="plg_nama" class="font-bold text-gray-800"></span></div>
+            <div><span class="text-gray-500 text-[10px] uppercase font-bold block">Asrama / Kelas:</span><span id="plg_domisili" class="font-bold text-gray-800"></span></div>
+          </div>
+          <!-- Hidden inputs untuk dikirim ke Google Sheet -->
+          <input type="hidden" name="nama" id="plg_h_nama">
+          <input type="hidden" name="asrama" id="plg_h_asrama">
+          <input type="hidden" name="kelas" id="plg_h_kelas">
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4 border-gray-100">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Jenis Pelanggaran *</label>
+            <select name="jenis" id="plg_jenis" onchange="updateBentukPelanggaran()" class="w-full px-3 py-2 border border-gray-300 rounded focus:border-red-500 outline-none" required>
+              <option value="">-- Pilih Jenis --</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-1">Bentuk Pelanggaran *</label>
+            <input type="text" name="bentuk" id="plg_bentuk" list="dl_bentuk_pelanggaran" onchange="autoFillTakziran()" class="w-full px-3 py-2 border border-gray-300 rounded focus:border-red-500 outline-none" required disabled autocomplete="off" placeholder="Pilih atau ketik manual...">
+            <datalist id="dl_bentuk_pelanggaran"></datalist>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Takziran / Hukuman Baku *</label>
+          <input type="text" name="takziran" id="plg_takziran" class="w-full px-3 py-2 bg-yellow-50 border border-yellow-400 font-semibold text-gray-800 rounded focus:border-red-500 outline-none" placeholder="Otomatis terisi jika bentuk pelanggaran dipilih..." required>
+          <p class="text-[10px] text-gray-500 mt-1">Dapat diedit manual jika ada penyesuaian hukuman khusus.</p>
+        </div>
+        
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Evaluasi / Keterangan (Opsional)</label>
+          <textarea name="evaluasi" class="w-full px-3 py-2 border border-gray-300 rounded focus:border-red-500 outline-none" rows="2" placeholder="Catatan tambahan kejadian..."></textarea>
+        </div>
+      </div>
+      
+      <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-2 bg-gray-50 rounded-b-xl">
+        <button type="button" onclick="tutupModalPelanggaran()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition-colors text-sm font-bold">Batal</button>
+        <button type="submit" id="btn_submit_plg" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors text-sm font-bold disabled:opacity-50" disabled>Simpan Pelanggaran</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL DETAIL SANTRI (TAILWIND) -->
+<div id="modalDetailSantri" class="fixed inset-0 bg-black bg-opacity-50 z-[3000] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col transform scale-95 transition-transform duration-200" id="modalContent">
+    <div class="bg-primary text-white px-6 py-4 rounded-t-xl flex justify-between items-center">
+      <h5 class="text-lg font-bold flex items-center"><i class="bi bi-person-badge mr-3 text-xl"></i> Detail Profil Santri</h5>
+      <button onclick="closeModal()" class="text-white hover:text-gray-200 focus:outline-none"><i class="bi bi-x-lg text-xl"></i></button>
+    </div>
+    
+    <div class="p-6 overflow-y-auto flex-1" id="modal-detail-body"></div>
+
+    <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-2" id="modal-footer-actions">
+       </div>
+  </div>
+</div>
+
 <script>
   // ==============================================================
   // 1. PENGATURAN API SERVER (GAS) & VARIABEL GLOBAL
   // ==============================================================
-  // Ganti tulisan di bawah ini dengan URL Web App Anda yang berakhiran /exec
+  // PENTING: Ganti dengan URL Web App dari Google Script Anda yang baru
   const GAS_URL = "https://script.google.com/macros/s/AKfycbxkswfLnDTBPmAZjviWtK9ugm12lgxZAfNVGu3qHA4AfK0t6TMIgmUmaVblANaFkcyJCg/exec"; 
 
   let globalSantriData = []; 
@@ -11,6 +1004,9 @@
   let currentPageCetak = 1;
   let filteredSantriData = [];
   let filteredCetakData = [];
+
+  // Agar tidak error ketika library mencoba memanggil logoBase64
+  window.logoBase64 = '';
 
   // ==============================================================
   // 2. FUNGSI JEMBATAN API (MENGGANTIKAN google.script.run)
@@ -34,7 +1030,7 @@
       applyRoleAccess();
       switchPage('dashboard');
     }
-    // Auto Load ID PPS dan Tanggal Hijriah
+    // Auto Load Data
     generateHijriDropdown();
     generateIdPPS();
     loadProvinsiOtomatis();
@@ -65,7 +1061,6 @@
     toggleLoader(true);
     loginMsg.innerText = "";
 
-    // Panggil API Login
     callApi('processLogin', { user: user, pass: pass })
       .then(res => {
         toggleLoader(false);
@@ -82,7 +1077,7 @@
       })
       .catch(err => {
         toggleLoader(false);
-        loginMsg.innerText = "Koneksi Gagal. Pastikan internet aktif.";
+        loginMsg.innerText = "Koneksi Gagal. Pastikan internet aktif atau URL GAS benar.";
       });
   }
 
@@ -121,7 +1116,6 @@
       btn.classList.add('active', 'bg-gradient-to-r', 'from-accent', 'to-[#fbbf24]', 'text-dark', 'font-bold', 'shadow-lg');
     }
     
-    // Auto load data berdasarkan menu
     if(pageId === 'dashboard' || pageId === 'data-santri' || pageId === 'cetak') {
         if(globalSantriData.length === 0) loadDashboard();
     }
@@ -963,6 +1957,44 @@
       hKamar += `<tr><td class="border p-2">${noK++}</td><td class="border p-2 font-bold">${nama}</td><td class="border p-2">${r.awal}</td><td class="border p-2">${r.baru||''}</td><td class="border p-2">${r.mutasiIn||''}</td><td class="border p-2">${r.mutasiOut||''}</td><td class="border p-2">${r.berhenti||''}</td><td class="border p-2">${r.diberhentikan||''}</td><td class="border p-2 font-bold text-green-700">${r.akhir}</td></tr>`;
     });
     document.getElementById('tb-mutasi-kamar').innerHTML = hKamar;
+    
+    let madrasahKeys = Object.keys(data.wargaMadrasah).sort((a, b) => {
+      let lowA = a.toLowerCase(); let lowB = b.toLowerCase();
+      let aIsShifir = lowA.includes('shifir') || lowA.includes('sifir');
+      let bIsShifir = lowB.includes('shifir') || lowB.includes('sifir');
+      if (aIsShifir && !bIsShifir) return -1; if (!aIsShifir && bIsShifir) return 1;
+      let numA = lowA.match(/\d+/) ? parseInt(lowA.match(/\d+/)[0]) : 999;
+      let numB = lowB.match(/\d+/) ? parseInt(lowB.match(/\d+/)[0]) : 999;
+      if (numA !== numB) return numA - numB; return lowA.localeCompare(lowB);
+    });
+
+    let hMadrasah = ''; let noM = 1; let tM = {aw:0, br:0, mi:0, mo:0, b:0, d:0, ak:0};
+    madrasahKeys.forEach(nama => {
+      let r = data.wargaMadrasah[nama];
+      tM.aw += r.awal; tM.br += r.baru; tM.mi += r.mutasiIn; tM.mo += r.mutasiOut; tM.b += r.berhenti; tM.d += r.diberhentikan; tM.ak += r.akhir;
+      hMadrasah += `<tr><td class="border p-2">${noM++}</td><td class="border p-2 text-left font-bold pl-3">${nama}</td><td class="border p-2">${r.awal}</td><td class="border p-2">${r.baru||''}</td><td class="border p-2">${r.mutasiIn||''}</td><td class="border p-2">${r.mutasiOut||''}</td><td class="border p-2">${r.berhenti||''}</td><td class="border p-2">${r.diberhentikan||''}</td><td class="border p-2 font-bold text-green-700">${r.akhir}</td></tr>`;
+    });
+    if(madrasahKeys.length === 0) hMadrasah = `<tr><td colspan="9" class="border p-4 text-gray-400">Tidak ada data kelas madrasah</td></tr>`;
+    else hMadrasah += `<tr class="bg-gray-100 font-bold"><td class="border p-2" colspan="2">Jumlah</td><td class="border p-2">${tM.aw}</td><td class="border p-2">${tM.br||''}</td><td class="border p-2">${tM.mi||''}</td><td class="border p-2">${tM.mo||''}</td><td class="border p-2">${tM.b||''}</td><td class="border p-2">${tM.d||''}</td><td class="border p-2 text-[#1a5d1a]">${tM.ak}</td></tr>`;
+    document.getElementById('tb-mutasi-madrasah').innerHTML = hMadrasah;
+
+    let hMutasi = '';
+    if(data.mutasiDetail && data.mutasiDetail.length > 0) {
+       data.mutasiDetail.forEach((m, index) => {
+          hMutasi += `<tr class="hover:bg-gray-50 border-b">
+             <td class="p-3 border-r text-center">${index + 1}</td>
+             <td class="p-3 border-r text-center">${m.tgl}</td>
+             <td class="p-3 border-r"><span class="font-bold">${m.nama}</span><br><span class="text-xs text-gray-400">${m.id_pps}</span></td>
+             <td class="p-3 border-r text-center font-medium">${m.asal}</td>
+             <td class="p-3 border-r text-center font-medium">${m.tujuan}</td>
+             <td class="p-3 text-sm">${m.alasan}</td>
+          </tr>`;
+       });
+    } else {
+       hMutasi = `<tr><td colspan="6" class="p-6 text-center text-gray-400 italic border-b">Tidak ada riwayat mutasi/keluar di bulan ini</td></tr>`;
+    }
+    document.getElementById('tb-mutasi-detail').innerHTML = hMutasi;
+
     document.getElementById('dasbor-mutasi-hasil').classList.remove('hidden');
     document.getElementById('dasbor-mutasi-hasil').classList.add('flex');
   }
@@ -986,25 +2018,111 @@
   }
 
   function renderTabelPelanggaran() {
-    // Fungsi standar untuk membersihkan text dan mencocokkan di UI (sama seperti sebelumnya)
+    const bersihkanTeks = (str) => {
+      if (!str) return "";
+      return str.toLowerCase().replace(/['\-\s]/g, '').replace(/dz/g, 'z').replace(/dh/g, 'd').replace(/ww/g, 'w');   
+    };
+
+    const vBlnRaw = document.getElementById('filter-plg-bulan').value;
+    const vBln = bersihkanTeks(vBlnRaw); 
+    const vWil = document.getElementById('filter-plg-wilayah').value.toLowerCase();
+    const vKmr = document.getElementById('filter-plg-kamar').value.toLowerCase();
     const vCari = document.getElementById('filter-plg-search').value.toLowerCase();
-    filteredPelanggaranData = globalRiwayatPelanggaran.filter(p => p.nama.toLowerCase().includes(vCari) || p.id_pps.toLowerCase().includes(vCari));
-    
+
+    filteredPelanggaranData = globalRiwayatPelanggaran.filter(p => {
+      const tglBersih = bersihkanTeks(p.tgl_hijriah); 
+      const matchBulan = vBln === "" || tglBersih.includes(vBln);
+      const matchWil = vWil === "" || (p.asrama && p.asrama.toLowerCase().includes(vWil));
+      const matchKmr = vKmr === "" || (p.asrama && p.asrama.toLowerCase() === vKmr);
+      const matchCari = vCari === "" || (p.nama.toLowerCase().includes(vCari) || p.id_pps.toLowerCase().includes(vCari) || p.bentuk.toLowerCase().includes(vCari));
+      return matchBulan && matchWil && matchKmr && matchCari;
+    });
+
     document.getElementById('plg-total').innerText = filteredPelanggaranData.length;
+    let asramaCount = {}; let kasusCount = {};
+    filteredPelanggaranData.forEach(p => {
+      asramaCount[p.asrama] = (asramaCount[p.asrama] || 0) + 1;
+      kasusCount[p.jenis] = (kasusCount[p.jenis] || 0) + 1;
+    });
+
+    let topAsrama = "-"; let maxA = 0;
+    for(let k in asramaCount) { if(asramaCount[k] > maxA) { topAsrama = k; maxA = asramaCount[k]; } }
+    document.getElementById('plg-asrama-max').innerText = maxA > 0 ? topAsrama + " (" + maxA + ")" : "-";
+
+    let topKasus = "-"; let maxK = 0;
+    for(let k in kasusCount) { if(kasusCount[k] > maxK) { topKasus = k; maxK = kasusCount[k]; } }
+    document.getElementById('plg-kasus-max').innerText = maxK > 0 ? topKasus : "-";
+
     const tbody = document.getElementById('tabel-matriks-pelanggaran');
     let html = '';
-    if(filteredPelanggaranData.length === 0) html = '<tr><td colspan="5" class="py-10 text-center">Tidak ada data.</td></tr>';
-    else {
+    if(filteredPelanggaranData.length === 0) {
+      html = '<tr><td colspan="5" class="py-10 text-center text-gray-400 font-medium">Tidak ada data pelanggaran ditemukan.</td></tr>';
+    } else {
       filteredPelanggaranData.forEach(p => {
-        html += `<tr class="border-b"><td class="py-3 px-4">${p.tgl_hijriah}</td><td class="py-3 px-4">${p.nama}</td><td class="py-3 px-4">${p.asrama}</td><td class="py-3 px-4">${p.jenis}</td><td class="py-3 px-4">${p.takziran}</td></tr>`;
+        let badgeColor = p.jenis === 'Tibkam' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700';
+        html += `<tr class="hover:bg-gray-50 border-b border-gray-100 transition-colors">
+          <td class="py-3 px-4 text-[11px] font-bold text-gray-600 whitespace-nowrap">${p.tgl_hijriah}</td>
+          <td class="py-3 px-4 whitespace-nowrap"><span class="font-bold text-gray-800 block">${p.nama}</span><span class="text-[10px] text-gray-500">${p.id_pps}</span></td>
+          <td class="py-3 px-4 whitespace-nowrap"><span class="font-bold text-primary block">${p.asrama}</span><span class="text-[10px] text-gray-500">${p.kelas}</span></td>
+          <td class="py-3 px-4"><span class="${badgeColor} px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-1 inline-block">${p.jenis}</span><div class="text-xs text-gray-700 leading-relaxed">${p.bentuk}</div></td>
+          <td class="py-3 px-4 text-xs font-semibold text-gray-800 leading-relaxed">${p.takziran}</td>
+        </tr>`;
       });
     }
     tbody.innerHTML = html;
   }
 
+  function generateDropdownJenis() {
+    const selJenis = document.getElementById('plg_jenis');
+    let jenisUnik = [...new Set(globalMasterPelanggaran.map(item => item.jenis))];
+    selJenis.innerHTML = '<option value="">-- Pilih Jenis --</option>';
+    jenisUnik.forEach(j => { selJenis.innerHTML += `<option value="${j}">${j}</option>`; });
+  }
+
+  function updateBentukPelanggaran() {
+    const jns = document.getElementById('plg_jenis').value;
+    const inputBentuk = document.getElementById('plg_bentuk');
+    const dlBentuk = document.getElementById('dl_bentuk_pelanggaran');
+    document.getElementById('plg_takziran').value = ""; 
+    if(!jns) { dlBentuk.innerHTML = ''; inputBentuk.value = ''; inputBentuk.disabled = true; return; }
+    
+    let bentukFilter = globalMasterPelanggaran.filter(m => m.jenis === jns);
+    dlBentuk.innerHTML = '';
+    bentukFilter.forEach(b => { dlBentuk.innerHTML += `<option value="${b.bentuk}">`; });
+    inputBentuk.value = ''; inputBentuk.disabled = false;
+  }
+
+  function autoFillTakziran() {
+    const bntk = document.getElementById('plg_bentuk').value.trim();
+    const jns = document.getElementById('plg_jenis').value;
+    const inputTakziran = document.getElementById('plg_takziran');
+    const master = globalMasterPelanggaran.find(m => m.jenis === jns && m.bentuk === bntk);
+    if(master) inputTakziran.value = master.takziran; else inputTakziran.value = ""; 
+  }
+
+  function updateFilterKamarPlg() {
+    const wil = document.getElementById('filter-plg-wilayah').value;
+    const selKmr = document.getElementById('filter-plg-kamar');
+    selKmr.innerHTML = '<option value="">Semua Kamar</option>';
+    let listKmr = [...new Set(globalRiwayatPelanggaran.map(p => p.asrama))];
+    if(wil !== "") { listKmr = listKmr.filter(k => k.includes(wil)); }
+    listKmr.sort().forEach(k => { selKmr.innerHTML += `<option value="${k}">${k}</option>`; });
+  }
+
   function bukaModalPelanggaran() {
+    generateDropdownJenis(); 
+    const selectTgl = document.getElementById('plg_tgl_hijriah');
+    selectTgl.innerHTML = '';
+    const formatter = new Intl.DateTimeFormat('id-ID-u-ca-islamic', { day: 'numeric', month: 'long', year: 'numeric' });
+    for (let offset = -5; offset <= 0; offset++) {
+      const targetDate = new Date(); targetDate.setDate(targetDate.getDate() + offset);
+      let formattedStr = formatter.format(targetDate).replace(/ H$/i, '').trim().replace(/\\s+/g, '-') + ' H';
+      selectTgl.innerHTML += `<option value="${formattedStr}" ${offset === 0 ? 'selected' : ''}>${formattedStr} ${offset === 0 ? '(Hari Ini)' : ''}</option>`;
+    }
+    
     document.getElementById('form-pelanggaran').reset();
     document.getElementById('plg_info_santri').classList.add('hidden');
+    document.getElementById('plg_bentuk').disabled = true;
     document.getElementById('btn_submit_plg').disabled = true;
     document.getElementById('modalInputPelanggaran').classList.remove('hidden');
   }
@@ -1015,15 +2133,32 @@
   function cekIdPelanggaran() {
     clearTimeout(typingTimerPlg);
     const idPPS = document.getElementById('plg_id_pps').value.trim();
-    if(idPPS.length < 4) return;
+    const infoBox = document.getElementById('plg_info_santri');
+    const btnSubmit = document.getElementById('btn_submit_plg');
+
+    if(idPPS.length < 4) { infoBox.classList.add('hidden'); btnSubmit.disabled = true; return; }
     
+    document.getElementById('plg_nama').innerText = "Mencari...";
+    document.getElementById('plg_domisili').innerText = "...";
+    infoBox.classList.remove('hidden');
+
     typingTimerPlg = setTimeout(() => {
-      const santri = globalSantriData.find(s => s.id_pps.toLowerCase() === idPPS.toLowerCase());
+      const santri = globalSantriData.find(s => s.id_pps.toLowerCase() === idPPS.toLowerCase() && s.status_aktif.toLowerCase() === 'aktif');
       if(santri) {
         document.getElementById('plg_nama').innerText = santri.nama;
+        document.getElementById('plg_domisili').innerText = santri.asrama + " / " + santri.kelas_tingkat;
         document.getElementById('plg_h_nama').value = santri.nama;
-        document.getElementById('btn_submit_plg').disabled = false;
-        document.getElementById('plg_info_santri').classList.remove('hidden');
+        document.getElementById('plg_h_asrama').value = santri.asrama;
+        document.getElementById('plg_h_kelas').value = santri.kelas_tingkat;
+        btnSubmit.disabled = false;
+        infoBox.classList.replace('border-red-200', 'border-green-400');
+        infoBox.classList.replace('bg-red-50', 'bg-green-50');
+      } else {
+        document.getElementById('plg_nama').innerText = "TIDAK DITEMUKAN / BOYONG";
+        document.getElementById('plg_domisili').innerText = "-";
+        btnSubmit.disabled = true;
+        infoBox.classList.replace('border-green-400', 'border-red-200');
+        infoBox.classList.replace('bg-green-50', 'bg-red-50');
       }
     }, 600);
   }
@@ -1036,13 +2171,237 @@
     toggleLoader(true);
     callApi('savePelanggaranSantri', { data: payload }).then(res => {
         toggleLoader(false);
-        if(res.success) { tutupModalPelanggaran(); loadDataPelanggaran(); }
+        if(res.success) { tutupModalPelanggaran(); Swal.fire('Berhasil!', 'Pelanggaran direkam.', 'success'); loadDataPelanggaran(); }
+        else { Swal.fire('Gagal', res.msg, 'error'); }
     });
   }
 
   // ==============================================================
-  // 10. API WILAYAH (EMSIFA) & EKSPOR FAKE FUNGSI
+  // 10. FITUR CETAK DAN EKSPOR (PDF/EXCEL)
   // ==============================================================
+  
+  function exportExcel() {
+    if (filteredSantriData.length === 0) return Swal.fire('Kosong!', 'Tidak ada data untuk diekspor.', 'warning');
+    const dataToExport = filteredSantriData.map((s, index) => ({
+      "No": index + 1, "ID PPS": s.id_pps, "Tanggal Masuk": s.tgl_masuk, "Nama": s.nama, "Nama Akte": s.nama_akte,
+      "Tempat Lahir": s.tmp_lahir, "Tanggal Lahir": s.tgl_lahir, "Umur Masuk": s.umur_masuk, "Dsn/RT/RW": s.alamat_lengkap,
+      "Desa": s.desa, "Kecamatan": s.kecamatan, "Kabupaten": s.kabupaten, "Provinsi": s.provinsi, "Kode Pos": s.kodepos,
+      "NIK": s.nik, "KK": s.kk, "NISN": s.nisn, "Pendidikan Akhir": s.pendidikan, "Status Domisili": s.status_domisili,
+      "Domisili (Asrama)": s.asrama, "Kelas Tingkat": s.kelas_tingkat, "Tingkatan Quran": s.tingkat_quran, "Kelas Quran": s.kelas_quran,
+      "Nama Ayah": s.ayah, "NIK Ayah": s.nik_ayah, "Nama Ibu": s.ibu, "NIK Ibu": s.nik_ibu, "KK Ortu": s.kk_ortu,
+      "Nama Wali": s.wali, "KK Wali": s.kk_wali, "NIK Wali": s.nik_wali, "Kontak Wali": s.kontak_wali, "Pekerjaan Wali": s.pekerjaan_wali,
+      "Status Wali": s.status_wali, "Pendidikan Wali": s.pendidikan_wali, "Alamat Wali": s.alamat_wali, "Status Aktif": s.status_aktif,
+      "Status Santri": s.status_santri, "Jenis Kelamin": s.jenis_kelamin
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Data Santri Lengkap");
+    XLSX.writeFile(workbook, "Database_Lengkap_Santri.xlsx");
+  }
+
+  function printData() {
+    if (filteredSantriData.length === 0) return Swal.fire('Kosong!', 'Tidak ada data untuk dicetak.', 'warning');
+    let printContents = `<html><head><title>Print Laporan Santri</title><style>body{font-family:Arial;padding:20px}h2{text-align:center}table{width:100%;border-collapse:collapse}th,td{border:1px solid #000;padding:8px;font-size:12px}th{background-color:#f2f2f2}</style></head><body><h2>LAPORAN DATA SANTRI E-PESANTREN</h2><table><thead><tr><th>No</th><th>ID PPS</th><th>Nama Lengkap</th><th>Asrama</th><th>Kelas Tingkat</th><th>Status Santri</th></tr></thead><tbody>`;
+    filteredSantriData.forEach((s, index) => {
+      printContents += `<tr><td>${index + 1}</td><td>${s.id_pps || '-'}</td><td>${s.nama || '-'}</td><td>${s.asrama || '-'}</td><td>${s.kelas_tingkat || '-'}</td><td>${s.status_santri || '-'}</td></tr>`;
+    });
+    printContents += `</tbody></table><script>window.onload=function(){window.print();window.close();}<\/script></body></html>`;
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printContents); printWindow.document.close();
+  }
+
+  function exportPDFData() {
+    if (filteredSantriData.length === 0) return Swal.fire('Kosong!', 'Tidak ada data.', 'warning');
+    toggleLoader(true);
+    setTimeout(() => {
+      const tableBody = [[{text: 'No', bold: true, fontSize: 8}, {text: 'ID PPS', bold: true, fontSize: 8}, {text: 'Nama Lengkap', bold: true, fontSize: 8}, {text: 'L/P', bold: true, fontSize: 8}, {text: 'Tempat, Tgl Lahir', bold: true, fontSize: 8}, {text: 'Asal Daerah', bold: true, fontSize: 8}, {text: 'Asrama', bold: true, fontSize: 8}, {text: 'Kelas', bold: true, fontSize: 8}, {text: 'Status', bold: true, fontSize: 8}, {text: 'Nama Wali', bold: true, fontSize: 8}, {text: 'No. HP', bold: true, fontSize: 8}]];
+      filteredSantriData.forEach((s, index) => {
+        tableBody.push([{text: (index + 1).toString(), fontSize: 8}, {text: s.id_pps || '-', fontSize: 8}, {text: s.nama || '-', fontSize: 8}, {text: s.jenis_kelamin || '-', fontSize: 8}, {text: (s.tmp_lahir + ', ' + s.tgl_lahir) || '-', fontSize: 8}, {text: (s.kabupaten + ' - ' + s.provinsi) || '-', fontSize: 8}, {text: s.asrama || '-', fontSize: 8}, {text: s.kelas_tingkat || '-', fontSize: 8}, {text: s.status_santri || '-', fontSize: 8}, {text: s.wali || '-', fontSize: 8}, {text: s.kontak_wali || '-', fontSize: 8}]);
+      });
+      const docDefinition = {
+        pageSize: 'LEGAL', pageOrientation: 'landscape', pageMargins: [20, 20, 20, 20],
+        content: [{ text: 'LAPORAN DATABASE MASTER SANTRI', style: 'header', alignment: 'center', margin: [0, 0, 0, 15] }, { table: { headerRows: 1, widths: ['auto', 'auto', '*', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto'], body: tableBody } }],
+        styles: { header: { fontSize: 14, bold: true } }
+      };
+      toggleLoader(false);
+      pdfMake.createPdf(docDefinition).download('Laporan_Master_Santri.pdf');
+    }, 500);
+  }
+
+  function cetakSurat(idPPS) {
+    const santri = globalSantriData.find(s => s.id_pps === idPPS);
+    if (!santri) return Swal.fire('Error', 'Data tidak ditemukan!', 'error');
+    const tglMasehi = new Date().toLocaleDateString('id-ID', {day: '2-digit', month: 'long', year: 'numeric'});
+    toggleLoader(true);
+    setTimeout(() => {
+        let activeFont = 'Roboto'; 
+        if (pdfMake.vfs && pdfMake.vfs['CourierNew.ttf']) {
+            if (pdfMake.vfs['CourierNew.ttf'].includes('base64,')) pdfMake.vfs['CourierNew.ttf'] = pdfMake.vfs['CourierNew.ttf'].split('base64,')[1].trim();
+            if (pdfMake.vfs['CourierNew-Bold.ttf'] && pdfMake.vfs['CourierNew-Bold.ttf'].includes('base64,')) pdfMake.vfs['CourierNew-Bold.ttf'] = pdfMake.vfs['CourierNew-Bold.ttf'].split('base64,')[1].trim();
+            pdfMake.fonts = { CourierCustom: { normal: 'CourierNew.ttf', bold: pdfMake.vfs['CourierNew-Bold.ttf'] ? 'CourierNew-Bold.ttf' : 'CourierNew.ttf', italics: 'CourierNew.ttf', bolditalics: 'CourierNew.ttf' }, Roboto: { normal: 'Roboto-Regular.ttf', bold: 'Roboto-Medium.ttf', italics: 'Roboto-Italic.ttf', bolditalics: 'Roboto-MediumItalic.ttf' } };
+            activeFont = 'CourierCustom'; 
+        } else {
+            pdfMake.fonts = { Roboto: { normal: 'Roboto-Regular.ttf', bold: 'Roboto-Medium.ttf', italics: 'Roboto-Italic.ttf', bolditalics: 'Roboto-MediumItalic.ttf' } };
+        }
+
+        const docDefinition = {
+            pageSize: 'LEGAL', pageMargins: [30, 30, 30, 30],
+            defaultStyle: { font: activeFont, fontSize: 9, color: '#000000', lineHeight: 1.15 }, 
+            content: [
+                { table: { widths: ['auto', '*'], body: [ [ (typeof window.logoBase64 !== 'undefined' && window.logoBase64.length > 50 && window.logoBase64.includes('base64,')) ? { image: window.logoBase64, width: 35, alignment: 'center', margin: [0, 0, 0, 0] } : { text: 'LOGO', alignment: 'center', margin: [0, 5, 0, 0], fontSize: 14, bold: true }, { text: [ 'Panitia Pendaftaran & Penerimaan Santri/Murid Baru (P2SMB)\n', { text: 'Darul Aitam Sidogiri Surabaya\n', fontSize: 12, bold: true }, 'Jl. Bolodewo No. 26 Surabaya 60400, Telp. 031 3707000\n', 'Email : darulaitamsidogirisurabaya@gmail.com   website://www.sidogiri.net' ], margin: [15, 0, 0, 0] } ] ] }, layout: 'noBorders' },
+                { canvas: [{ type: 'line', x1: 0, y1: 5, x2: 550, y2: 5, lineWidth: 2 }], margin: [0, 5, 0, 10] }, 
+                { text: 'SURAT SALINAN PENDAFTARAN SANTRI /MURID BARU', alignment: 'center', bold: true, decoration: 'underline', fontSize: 11, margin: [0, 0, 0, 10] },
+                { table: { widths: ['25%', '2%', '73%'], body: [ [{ text: 'No. Registrasi', bold:true }, { text: ':', bold:true }, { text: santri.id_pps + '    (ID DAS: ' + santri.id_pps.replace('PPS-','') + ')', bold:true }], [{ text: 'IDENTITAS CALON SANTRI/MURID BARU', colSpan: 3, bold: true, margin: [0, 5, 0, 2] }, {}, {}], ['Nama Lengkap', ':', { text: santri.nama.toUpperCase(), bold: true }], ['Kelahiran', ':', (santri.tmp_lahir + ', ' + santri.tgl_lahir).toUpperCase()], ['Usia Masuk', ':', (santri.umur_masuk + ' Tahun').toUpperCase()], ['Jenis Kelamin', ':', (santri.jenis_kelamin || '-').toUpperCase()], ['Alamat', ':', santri.alamat_lengkap.toUpperCase()], [{ text: 'Desa/Kelurahan', margin: [15, 0, 0, 0] }, ':', santri.desa.toUpperCase()], [{ text: 'Kecamatan', margin: [15, 0, 0, 0] }, ':', santri.kecamatan.toUpperCase()], [{ text: 'Kab. /Kota', margin: [15, 0, 0, 0] }, ':', santri.kabupaten.toUpperCase() + '      Provinsi : ' + santri.provinsi.toUpperCase()], [{ text: 'Negara', margin: [15, 0, 0, 0] }, ':', 'INDONESIA      Kode Pos : ' + santri.kodepos], ['Pendidikan Akhir', ':', santri.pendidikan.toUpperCase()], ['Nama Ayah Kandung', ':', santri.ayah.toUpperCase()], ['Tanggal Daftar', ':', (santri.tgl_masuk || tglMasehi).toUpperCase()], ['Domisili', ':', santri.asrama.toUpperCase()], ['Rencana Tes Kelas', ':', santri.kelas_tingkat.toUpperCase()], ['Mutasi Dari', ':', '0'], ['STATUS SANTRI', ':', (santri.status_santri || '-').toUpperCase()], [{ text: 'IDENTITAS WALI', colSpan: 3, bold: true, margin: [0, 5, 0, 2] }, {}, {}], ['Nama Wali', ':', santri.wali.toUpperCase()], ['Pendidikan Akhir', ':', (santri.pendidikan_wali || '-').toUpperCase()], ['Pekerjaan', ':', santri.pekerjaan_wali.toUpperCase()], ['Alamat Rumah', ':', santri.alamat_wali.toUpperCase()], ['Hub. Perwalian', ':', santri.status_wali.toUpperCase()], ['No . Telp/HP', ':', santri.kontak_wali] ] }, layout: 'noBorders' },
+                { columns: [ { width: '50%', text: '' }, { width: '50%', text: [ 'Surabaya, ' + tglMasehi + '\n', 'Panitia Pendaftaran dan\n', 'Penerimaan Santri/Murid Baru\n', 'Darul Aitam Sidogiri Surabaya\n', 'Ketua Panitia P2SMB\n\n\n\n', { text: 'MOCH. RIZAL', bold: true, decoration: 'underline' } ], alignment: 'left', margin: [40, 10, 0, 15] } ] },
+                { table: { widths: ['48%', '4%', '48%'], body: [ [ { table: { widths: ['100%'], body: [ [{ text: "1   LULUS BACA AL-QUR'AN", bold: true, border: [false, false, false, true] }], [{ text: 'No. Test : ...................................', margin: [0,2,0,2], border: [false, false, false, true], style: {dash: {length: 2}} }], [{ text: 'Jabatan  : ...................................', margin: [0,2,0,2], border: [false, false, false, true] }], [{ text: 'Nama     : ...................................', margin: [0,2,0,2], border: [false, false, false, false] }] ] }, layout: { defaultBorder: false, hLineWidth: function(i, node) { return (i === 1) ? 1 : 0.5; }, hLineStyle: function (i, node) { return (i > 1 && i < node.table.body.length) ? {dash: {length: 2, space: 1}} : null; } }, border: [true, true, true, true], padding: [5, 5, 5, 5] }, '', { table: { widths: ['100%'], body: [ [{ text: "2   LULUS/DITETAPKAN DI KELAS : ........", bold: true, border: [false, false, false, true] }], [{ text: 'No. Test : ...................................', margin: [0,2,0,2], border: [false, false, false, true] }], [{ text: 'Jabatan  : ...................................', margin: [0,2,0,2], border: [false, false, false, true] }], [{ text: 'Nama     : ...................................', margin: [0,2,0,2], border: [false, false, false, false] }] ] }, layout: { defaultBorder: false, hLineWidth: function(i, node) { return (i === 1) ? 1 : 0.5; }, hLineStyle: function (i, node) { return (i > 1 && i < node.table.body.length) ? {dash: {length: 2, space: 1}} : null; } }, border: [true, true, true, true], padding: [5, 5, 5, 5] } ], [{text:'', margin:[0,5,0,5]}, '', {text:'', margin:[0,5,0,5]}], [ { table: { widths: ['100%'], body: [ [{ text: '3   DICATAT SBG. WRG DAERAH-KAMAR : ' + santri.asrama.toUpperCase(), bold: true, border: [false, false, false, true] }], [{ text: 'No.Urut Reg. : ..................', margin: [0,2,0,2], border: [false, false, false, true] }], [{ text: 'Jabatan      : Santri Aktif', margin: [0,2,0,2], border: [false, false, false, true] }], [{ text: 'Nama         : ' + santri.nama.toUpperCase(), margin: [0,2,0,2], border: [false, false, false, false] }] ] }, layout: { defaultBorder: false, hLineWidth: function(i, node) { return (i === 1) ? 1 : 0.5; }, hLineStyle: function (i, node) { return (i > 1 && i < node.table.body.length) ? {dash: {length: 2, space: 1}} : null; } }, border: [true, true, true, true], padding: [5, 5, 5, 5] }, '', { table: { widths: ['100%'], body: [ [{ text: "4   DISAHKAN SBG MURID TGL : ...............", bold: true, border: [false, false, false, true] }], [{ text: 'No. Test : ...................................', margin: [0,2,0,2], border: [false, false, false, true] }], [{ text: 'Jabatan  : ...................................', margin: [0,2,0,2], border: [false, false, false, true] }], [{ text: 'Nama     : ...................................', margin: [0,2,0,2], border: [false, false, false, false] }] ] }, layout: { defaultBorder: false, hLineWidth: function(i, node) { return (i === 1) ? 1 : 0.5; }, hLineStyle: function (i, node) { return (i > 1 && i < node.table.body.length) ? {dash: {length: 2, space: 1}} : null; } }, border: [true, true, true, true], padding: [5, 5, 5, 5] } ] ] }, layout: 'noBorders' }
+            ]
+        };
+
+        toggleLoader(false);
+        pdfMake.createPdf(docDefinition).open();
+    }, 500); 
+  }
+
+  function cetakPDFMutasi() {
+    if(!glbMutasiData) return; const data = glbMutasiData;
+    const th = {bold: true, alignment: 'center', fillColor: '#f2f2f2', fontSize: 9, margin: [0, 4, 0, 4]};
+    const tc = {alignment: 'center', fontSize: 9, margin: [0, 2, 0, 2]};
+
+    let kamarKeys = Object.keys(data.wargaKamar).sort();
+    let bKamar = [
+      [ {text:'NO', rowSpan:2, style:th}, {text:'Kamar', rowSpan:2, style:th}, {text:'Awal Bulan', rowSpan:2, style:th}, {text:'Baru', colSpan:2, style:th}, {}, {text:'Keluar', colSpan:3, style:th}, {}, {}, {text:'Akhir Bulan', rowSpan:2, style:th} ],
+      [ '', '', '', {text:'Baru', style:th}, {text:'Mutasi Antar Kamar', style:th}, {text:'Mutasi Antar Kamar', style:th}, {text:'Berhenti', style:th}, {text:'Diberhentikan', style:th}, '' ]
+    ];
+    let noK = 1; let tK = {aw:0, br:0, mi:0, mo:0, b:0, d:0, ak:0};
+    kamarKeys.forEach(nama => {
+      let r = data.wargaKamar[nama];
+      tK.aw+=r.awal; tK.br+=r.baru; tK.mi+=r.mutasiIn; tK.mo+=r.mutasiOut; tK.b+=r.berhenti; tK.d+=r.diberhentikan; tK.ak+=r.akhir;
+      bKamar.push([ {text:noK++, style:tc}, {text:nama, style:tc}, {text:r.awal, style:tc}, {text:r.baru||'', style:tc}, {text:r.mutasiIn||'', style:tc}, {text:r.mutasiOut||'', style:tc}, {text:r.berhenti||'', style:tc}, {text:r.diberhentikan||'', style:tc}, {text:r.akhir, style:tc} ]);
+    });
+    bKamar.push([ {text:'Jumlah', colSpan:2, style:th}, '', {text:tK.aw, style:th}, {text:tK.br||'', style:th}, {text:tK.mi||'', style:th}, {text:tK.mo||'', style:th}, {text:tK.b||'', style:th}, {text:tK.d||'', style:th}, {text:tK.ak, style:th} ]);
+
+    let madrasahKeys = Object.keys(data.wargaMadrasah).sort((a, b) => {
+      let lowA = a.toLowerCase(); let lowB = b.toLowerCase();
+      let aIsShifir = lowA.includes('shifir') || lowA.includes('sifir');
+      let bIsShifir = lowB.includes('shifir') || lowB.includes('sifir');
+      if (aIsShifir && !bIsShifir) return -1; if (!aIsShifir && bIsShifir) return 1;
+      let numA = lowA.match(/\d+/) ? parseInt(lowA.match(/\d+/)[0]) : 999;
+      let numB = lowB.match(/\d+/) ? parseInt(lowB.match(/\d+/)[0]) : 999;
+      if (numA !== numB) return numA - numB; return lowA.localeCompare(lowB);
+    });
+
+    let bMadr = [
+      [ {text:'NO', rowSpan:2, style:th}, {text:'Kelas', rowSpan:2, style:th}, {text:'Awal Bulan', rowSpan:2, style:th}, {text:'Baru', colSpan:2, style:th}, {}, {text:'Keluar', colSpan:3, style:th}, {}, {}, {text:'Akhir Bulan', rowSpan:2, style:th} ],
+      [ '', '', '', {text:'Baru', style:th}, {text:'Mutasi Antar Kelas', style:th}, {text:'Mutasi Kamar', style:th}, {text:'Berhenti', style:th}, {text:'Diberhentikan', style:th}, '' ]
+    ];
+    let noM = 1; let tM = {aw:0, br:0, mi:0, mo:0, b:0, d:0, ak:0};
+    madrasahKeys.forEach(nama => {
+      let r = data.wargaMadrasah[nama];
+      tM.aw+=r.awal; tM.br+=r.baru; tM.mi+=r.mutasiIn; tM.mo+=r.mutasiOut; tM.b+=r.berhenti; tM.d+=r.diberhentikan; tM.ak+=r.akhir;
+      bMadr.push([ {text:noM++, style:tc}, {text:nama, fontSize:9, margin:[2,2,0,2]}, {text:r.awal, style:tc}, {text:r.baru||'', style:tc}, {text:r.mutasiIn||'', style:tc}, {text:r.mutasiOut||'', style:tc}, {text:r.berhenti||'', style:tc}, {text:r.diberhentikan||'', style:tc}, {text:r.akhir, style:tc} ]);
+    });
+    bMadr.push([ {text:'Jumlah', colSpan:2, style:th}, '', {text:tM.aw, style:th}, {text:tM.br||'', style:th}, {text:tM.mi||'', style:th}, {text:tM.mo||'', style:th}, {text:tM.b||'', style:th}, {text:tM.d||'', style:th}, {text:tM.ak, style:th} ]);
+
+    const docDefinition = {
+      pageSize: 'A4', pageMargins: [40, 50, 40, 40],
+      content: [
+        { text: `Lampiran surat No: .../PPS.700.${data.asramaTarget}.Sby/Lap/XI.${data.tahun}`, fontSize: 10, margin: [0, 0, 0, 15] },
+        { text: 'A. Laporan kegiatan', fontSize: 11, bold: true, margin: [0, 0, 0, 5] },
+        { text: 'A.1. Agenda Administrasi Daerah', margin: [15, 0, 0, 5] },
+        { text: 'A.1.1. Agenda Surat Keluar', margin: [30, 0, 0, 5] },
+        { table: { headerRows: 1, widths: ['15%', '35%', '30%', '20%'], body: [
+           [{text:'No', style:th}, {text:'Alamat Surat', style:th}, {text:'Hal', style:th}, {text:'Tanggal', style:th}],
+           ...(data.suratKeluar.length > 0 ? data.suratKeluar.map(s => [{text:s.no_surat,style:tc}, {text:s.tujuan,fontSize:9}, {text:s.hal,fontSize:9}, {text:s.tgl,style:tc}]) : [[{text:'Nihil', colSpan:4, style:tc},'','','']])
+        ]}, margin: [30, 0, 0, 15] },
+        { text: 'A.1.5. Data Warga Perkamar', margin: [30, 0, 0, 5] },
+        { table: { headerRows: 2, widths: ['5%','16%','12%', '8%','15%', '15%','10%','10%', '9%'], body: bKamar }, margin: [30, 0, 0, 15] },
+        { text: 'A.1.6. Data Warga Sesuai Kelas Madrasah', margin: [30, 0, 0, 5] },
+        { table: { headerRows: 2, widths: ['5%','16%','12%', '8%','15%', '15%','10%','10%', '9%'], body: bMadr }, margin: [30, 0, 0, 15] },
+        { text: 'A.1.7. Rincian Mutasi / Boyong', margin: [30, 0, 0, 5] },
+        { table: { headerRows: 1, widths: ['5%', '15%', '25%', '15%', '15%', '25%'], body: [
+           [{text:'NO', style:th}, {text:'Tanggal', style:th}, {text:'Nama Santri', style:th}, {text:'Asal', style:th}, {text:'Tujuan', style:th}, {text:'Keterangan', style:th}],
+           ...(data.mutasiDetail.length > 0 ? data.mutasiDetail.map((m, i) => [
+               {text: i+1, style:tc}, {text: m.tgl, style:tc}, {text: m.nama + '\nID: ' + m.id_pps, fontSize: 8}, {text: m.asal, style:tc}, {text: m.tujuan, style:tc}, {text: m.alasan, fontSize: 8}
+           ]) : [[{text:'Tidak ada riwayat mutasi di bulan ini', colSpan:6, alignment:'center', margin:[0,5,0,5]},'','','','','']])
+        ]}, margin: [30, 0, 0, 15] }
+      ],
+      defaultStyle: { font: 'Roboto', fontSize: 9, color: '#000' }
+    };
+    pdfMake.createPdf(docDefinition).download(`Laporan_Mutasi_${data.asramaTarget}_${data.bulan}_${data.tahun}.pdf`);
+  }
+
+  function cetakPDFPelanggaran() {
+    if (!filteredPelanggaranData || filteredPelanggaranData.length === 0) return Swal.fire('Kosong!', 'Tidak ada data.', 'warning');
+    const fTahun = document.getElementById('filter-plg-tahun').value;
+    const fBulan = document.getElementById('filter-plg-bulan').value || 'Semua Bulan';
+    const fWilayah = document.getElementById('filter-plg-kamar').value || document.getElementById('filter-plg-wilayah').value || 'Semua Wilayah';
+
+    toggleLoader(true);
+    setTimeout(() => {
+      const thStyle = {bold: true, fillColor: '#f8fafc', color: '#334155', fontSize: 9, margin: [0, 4, 0, 4]};
+      const tableBody = [
+        [ {text: 'No', alignment: 'center', ...thStyle}, {text: 'Tgl (Hijriah)', ...thStyle}, {text: 'ID & Nama Santri', ...thStyle}, {text: 'Kamar/Kelas', ...thStyle}, {text: 'Kasus', ...thStyle}, {text: 'Bentuk Pelanggaran', ...thStyle}, {text: 'Takziran', ...thStyle} ]
+      ];
+      filteredPelanggaranData.forEach((p, index) => {
+        tableBody.push([ {text: (index + 1).toString(), fontSize: 9, alignment: 'center', margin: [0, 3, 0, 3], color: '#475569'}, {text: p.tgl_hijriah || '-', fontSize: 9, margin: [0, 3, 0, 3], color: '#475569'}, {text: `${p.nama}\nID: ${p.id_pps}`, fontSize: 9, margin: [0, 3, 0, 3], color: '#1e293b'}, {text: `${p.asrama}\n${p.kelas}`, fontSize: 9, margin: [0, 3, 0, 3], color: '#475569'}, {text: p.jenis || '-', fontSize: 9, bold: true, margin: [0, 3, 0, 3], color: '#b91c1c'}, {text: p.bentuk || '-', fontSize: 9, margin: [0, 3, 0, 3], color: '#334155'}, {text: p.takziran || '-', fontSize: 9, margin: [0, 3, 0, 3], color: '#334155'} ]);
+      });
+
+      const docDefinition = {
+        pageSize: 'A4', pageOrientation: 'landscape', pageMargins: [40, 40, 40, 40],
+        content: [
+          { text: 'LAPORAN REKAPITULASI PELANGGARAN SANTRI', style: 'header', alignment: 'center', margin: [0, 0, 0, 5], color: '#0f172a' },
+          { text: `Periode: ${fBulan} ${fTahun} H  |  Wilayah: ${fWilayah.toUpperCase()}`, alignment: 'center', fontSize: 10, color: '#64748b', margin: [0, 0, 0, 20] },
+          { table: { headerRows: 1, widths: ['auto', 'auto', '20%', '15%', '10%', '*', '*'], body: tableBody },
+            layout: { hLineWidth: function (i, node) { return 0.5; }, vLineWidth: function (i, node) { return 0.5; }, hLineColor: function (i, node) { return '#cbd5e1'; }, vLineColor: function (i, node) { return '#cbd5e1'; }, paddingLeft: function(i, node) { return 8; }, paddingRight: function(i, node) { return 8; } }
+          }
+        ],
+        styles: { header: { fontSize: 13, bold: true } }, defaultStyle: { font: 'Roboto' } 
+      };
+      toggleLoader(false);
+      pdfMake.createPdf(docDefinition).download(`Laporan_Pelanggaran_${fBulan}_${fTahun}.pdf`);
+    }, 500);
+  }
+  
+  function cetakKuitansiSyahriah(idPPS, bulan, tglHijriah) {
+    const santri = globalSyahriahMaster.find(s => s.id_pps === idPPS);
+    const tahun = document.getElementById('filter-tahun-syahriah').value;
+    const tglMasehi = new Date().toLocaleDateString('id-ID', {day: '2-digit', month: 'long', year: 'numeric'});
+    if(!santri) return;
+
+    toggleLoader(true);
+    setTimeout(() => {
+        try {
+            let activeFont = 'Roboto'; 
+            if (pdfMake.vfs && pdfMake.vfs['CourierNew.ttf']) {
+                if (pdfMake.vfs['CourierNew.ttf'].includes('base64,')) pdfMake.vfs['CourierNew.ttf'] = pdfMake.vfs['CourierNew.ttf'].split('base64,')[1].trim();
+                if (pdfMake.vfs['CourierNew-Bold.ttf'] && pdfMake.vfs['CourierNew-Bold.ttf'].includes('base64,')) pdfMake.vfs['CourierNew-Bold.ttf'] = pdfMake.vfs['CourierNew-Bold.ttf'].split('base64,')[1].trim();
+                pdfMake.fonts = { CourierCustom: { normal: 'CourierNew.ttf', bold: pdfMake.vfs['CourierNew-Bold.ttf'] ? 'CourierNew-Bold.ttf' : 'CourierNew.ttf', italics: 'CourierNew.ttf', bolditalics: 'CourierNew.ttf' }, Roboto: { normal: 'Roboto-Regular.ttf', bold: 'Roboto-Medium.ttf', italics: 'Roboto-Italic.ttf', bolditalics: 'Roboto-MediumItalic.ttf' } };
+                activeFont = 'CourierCustom'; 
+            } else {
+                pdfMake.fonts = { Roboto: { normal: 'Roboto-Regular.ttf', bold: 'Roboto-Medium.ttf', italics: 'Roboto-Italic.ttf', bolditalics: 'Roboto-MediumItalic.ttf' } };
+            }
+
+            const docDefinition = {
+                pageSize: 'A5', pageOrientation: 'landscape', pageMargins: [40, 35, 40, 30],
+                defaultStyle: { font: activeFont, fontSize: 10, color: '#333' },
+                content: [
+                    { table: { widths: ['auto', '*'], body: [[ (typeof window.logoBase64 !== 'undefined' && window.logoBase64.length > 50) ? { image: window.logoBase64, width: 45, margin: [0, 0, 15, 0] } : { text: 'LOGO', bold: true, fontSize: 16, margin: [0, 10, 15, 0] }, { text: [ { text: 'KUITANSI PEMBAYARAN SYAHRIAH\n', fontSize: 14, bold: true, color: '#1a5d1a' }, { text: 'Darul Aitam Sidogiri Surabaya\n', fontSize: 11, bold: true, color: '#000' }, { text: 'Jl. Bolodewo No. 26 Surabaya 60400, Telp. 031 3707000', fontSize: 9, color: '#555' } ], margin: [0, 3, 0, 0] } ]] }, layout: 'noBorders' },
+                    { canvas: [{ type: 'line', x1: 0, y1: 10, x2: 515, y2: 10, lineWidth: 2, lineColor: '#1a5d1a' }], margin: [0, 0, 0, 20] },
+                    { table: { widths: ['28%', '2%', '70%'], body: [ [ { text: 'Telah Diterima Dari', bold: true }, ':', { text: (santri.nama || '-').toUpperCase(), bold: true, fontSize: 11, color: '#000' } ], [ { text: 'ID Registrasi', bold: true }, ':', { text: santri.id_pps || '-', color: '#444' } ], [ { text: 'Uang Sebesar', bold: true }, ':', { text: `Rp ${NOMINAL_SPP.toLocaleString('id-ID')}`, bold: true, fontSize: 14, color: '#1a5d1a' } ], [ { text: 'Guna Membayar', bold: true }, ':', { text: `Syahriah / SPP Bulan ${bulan.toUpperCase()} Tahun ${tahun}`, color: '#444' } ] ] }, layout: { defaultBorder: false, paddingTop: function(i) { return 6; }, paddingBottom: function(i) { return 6; } }, margin: [10, 0, 10, 20] },
+                    { columns: [ { width: '60%', text: [ { text: 'Catatan:\n', bold: true, fontSize: 9 }, { text: 'Simpan kuitansi ini sebagai bukti pembayaran yang sah.', italics: true, fontSize: 9, color: '#666' } ], margin: [10, 20, 0, 0] }, { width: '40%', alignment: 'center', text: [ `Surabaya, ${tglMasehi}\nPetugas Pembayaran Syahriah\n\n\n\n\n`, { text: '( UNTUNG YUWAFI )', bold: true } ] } ] }
+                ]
+            };
+            let namaFile = `Kuitansi_${bulan}_${(santri.nama || 'Santri').replace(/\s+/g, '_')}.pdf`;
+            pdfMake.createPdf(docDefinition).download(namaFile);
+            toggleLoader(false);
+            Swal.fire({ title: 'Berhasil Diunduh!', text: 'File Kuitansi PDF telah disimpan.', icon: 'success', timer: 2000, showConfirmButton: false });
+        } catch(err) {
+            toggleLoader(false); Swal.fire('Gagal Membuat Kuitansi', err.message, 'error');
+        }
+    }, 500);
+  }
+
   const API_WILAYAH = 'https://www.emsifa.com/api-wilayah-indonesia/api';
   let dataProv = [], dataKab = [], dataKec = [], dataDes = [];
   async function loadProvinsiOtomatis() {
@@ -1061,8 +2420,28 @@
           option.value = item.name; datalist.appendChild(option);
       });
   }
-  function setupEventWilayah() { /* Logika dropdown berantai kecamatan/desa sama */ }
-
+  function setupEventWilayah() {
+    const inputProv = document.getElementById('in_provinsi');
+    const inputKab = document.getElementById('in_kabupaten');
+    const inputKec = document.getElementById('in_kecamatan');
+    const inputDesa = document.getElementById('in_desa');
+    if (!inputProv) return;
+    inputProv.addEventListener('change', async (e) => {
+        const val = e.target.value.toUpperCase(); const match = dataProv.find(p => p.name === val);
+        inputKab.value = ''; inputKec.value = ''; inputDesa.value = ''; inputKab.disabled = true; inputKec.disabled = true; inputDesa.disabled = true; document.getElementById('dl_kabupaten').innerHTML = '';
+        if (match) { try { const res = await fetch(`${API_WILAYAH}/regencies/${match.id}.json`); dataKab = await res.json(); renderDatalistHTML('dl_kabupaten', dataKab); inputKab.disabled = false; inputKab.focus(); } catch (err) { } }
+    });
+    inputKab.addEventListener('change', async (e) => {
+        const val = e.target.value.toUpperCase(); const match = dataKab.find(p => p.name === val);
+        inputKec.value = ''; inputDesa.value = ''; inputKec.disabled = true; inputDesa.disabled = true; document.getElementById('dl_kecamatan').innerHTML = '';
+        if (match) { try { const res = await fetch(`${API_WILAYAH}/districts/${match.id}.json`); dataKec = await res.json(); renderDatalistHTML('dl_kecamatan', dataKec); inputKec.disabled = false; inputKec.focus(); } catch (err) { } }
+    });
+    inputKec.addEventListener('change', async (e) => {
+        const val = e.target.value.toUpperCase(); const match = dataKec.find(p => p.name === val);
+        inputDesa.value = ''; inputDesa.disabled = true; document.getElementById('dl_desa').innerHTML = '';
+        if (match) { try { const res = await fetch(`${API_WILAYAH}/villages/${match.id}.json`); dataDes = await res.json(); renderDatalistHTML('dl_desa', dataDes); inputDesa.disabled = false; inputDesa.focus(); } catch (err) { } }
+    });
+  }
   function applyRoleAccess() {
     const role = localStorage.getItem('userRole');
     const restrictedMenus = ['nav-pendaftaran', 'nav-cetak', 'nav-syahriah', 'nav-pelanggaran', 'nav-mutasi'];
@@ -1073,12 +2452,6 @@
       else element.classList.remove('hidden');
     });
   }
-
-  // *CATATAN PENTING: Untuk PDFMake, Cetak, dan Ekspor Excel, kodenya bergantung pada library eksternal (html2pdf/sheetjs) yang telah Anda panggil di <head>. Pastikan logic pemanggilannya tetap menggunakan `filteredSantriData` seperti semula.
-
-  function exportExcel() { /* kode sheet.js menggunakan filteredSantriData */ }
-  function exportPDFData() { /* kode pdfMake menggunakan filteredSantriData */ }
-  function cetakSurat() { /* kode mencetak dari template HTML manual */ }
-  function cetakPDFMutasi() { /* kode pdf laporan */ }
-  function cetakPDFPelanggaran() { /* kode pdf laporan */ }
 </script>
+</body>
+</html>
