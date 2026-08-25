@@ -1162,14 +1162,60 @@
     }
   }
 
+  let isDataSantriLoaded = false; // Penanda apakah lazy load selesai
+
+  function switchPage(pageId) {
+    document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
+    document.querySelectorAll('.nav-link').forEach(l => {
+      l.classList.remove('active', 'bg-gradient-to-r', 'from-accent', 'to-[#fbbf24]', 'text-dark', 'font-bold', 'shadow-lg');
+      l.classList.add('text-white/90');
+    });
+    
+    const target = document.getElementById('page-' + pageId);
+    if(target) target.classList.remove('hidden');
+    
+    const btn = document.querySelector(`[onclick="switchPage('${pageId}')"]`);
+    if(btn) {
+      btn.classList.remove('text-white/90');
+      btn.classList.add('active', 'bg-gradient-to-r', 'from-accent', 'to-[#fbbf24]', 'text-dark', 'font-bold', 'shadow-lg');
+    }
+    
+    // Auto load data berdasarkan menu
+    if(pageId === 'dashboard') {
+        if(!isDataSantriLoaded) loadDashboard();
+    }
+    
+    // Jika user keburu klik "Data Santri" atau "Cetak" tapi data latar belakang belum selesai
+    if(pageId === 'data-santri' || pageId === 'cetak') {
+        if(!isDataSantriLoaded) {
+            toggleLoader(true); // Tampilkan loading, nanti otomatis hilang saat lazyLoad selesai
+        }
+    }
+
+    if(pageId === 'syahriah' && (typeof globalSyahriahMaster === 'undefined' || globalSyahriahMaster.length === 0)) {
+        loadDataSyahriah(); 
+    }
+    if(pageId === 'pelanggaran' && (typeof globalMasterPelanggaran === 'undefined' || globalMasterPelanggaran.length === 0)) {
+        loadDataPelanggaran(); 
+    }
+
+    if (window.innerWidth < 768) {
+      toggleSidebar();
+    }
+  }
+
   function loadDashboard() {
     toggleLoader(true);
     const roleSaatIni = localStorage.getItem('userRole') || 'Admin';
 
+    // 1. Load data ringan (Ringkasan Dashboard) agar tampil instan
     callApi('getSummary', { role: roleSaatIni })
       .then(data => {
         toggleLoader(false);
         renderDashboard(data);
+        
+        // 2. LAZY LOADING: Panggil data besar (ribuan santri) diam-diam di latar belakang
+        lazyLoadDataSantri(roleSaatIni);
       })
       .catch(err => {
         toggleLoader(false);
@@ -1177,13 +1223,33 @@
       });
   }
 
+  function lazyLoadDataSantri(role) {
+    // Fungsi ini tidak memunculkan Swal.fire loading, biarkan berjalan di background
+    callApi('getAllSantri', { role: role })
+      .then(res => {
+        if(res.success) {
+          globalSantriData = res.data || []; 
+          filteredSantriData = [...globalSantriData];
+          filteredCetakData = [...globalSantriData];
+          isDataSantriLoaded = true; // Beri tanda bahwa database sudah siap
+          
+          currentPageSantri = 1;
+          currentPageCetak = 1;
+
+          // Jika user posisinya sedang menunggu di halaman Data Santri/Cetak, render tabel & tutup loading
+          if (!document.getElementById('page-data-santri').classList.contains('hidden')) {
+             renderTableSantri();
+             toggleLoader(false);
+          }
+          if (!document.getElementById('page-cetak').classList.contains('hidden')) {
+             renderTableCetak();
+             toggleLoader(false);
+          }
+        }
+      }).catch(err => console.log('Background load gagal.'));
+  }
+
   function renderDashboard(data) {
-    globalSantriData = data.allSantri || []; 
-    filteredSantriData = [...globalSantriData];
-    filteredCetakData = [...globalSantriData];
-    currentPageSantri = 1;
-    currentPageCetak = 1;
-    
     document.getElementById('dash-total').innerText = data.totalSantri || 0;
     document.getElementById('dash-boyong').innerText = data.totalBoyong || 0;
     
@@ -1221,11 +1287,7 @@
         recentHtml = '<tr><td colspan="3" class="py-4 text-center text-gray-500">Data kosong</td></tr>';
     }
     document.getElementById('list-recent').innerHTML = recentHtml;
-
-    renderTableSantri();
-    renderTableCetak();
   }
-
   // ==============================================================
   // 5. MANAJEMEN TABEL (SANTRI & CETAK)
   // ==============================================================
